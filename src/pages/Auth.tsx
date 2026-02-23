@@ -1,0 +1,111 @@
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { LogIn, UserPlus, Mail, Lock } from "lucide-react";
+
+const Auth = () => {
+  const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      if (isLogin) {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        toast({ title: "Welcome back!" });
+      } else {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { emailRedirectTo: window.location.origin },
+        });
+        if (error) throw error;
+        toast({ title: "Check your email to confirm your account!" });
+      }
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-background bg-gradient-hero flex items-center justify-center p-4">
+      <div className="glass-card p-8 w-full max-w-md animate-fade-in">
+        <h1 className="text-3xl font-display font-bold text-gradient text-center mb-2">
+          {isLogin ? "Welcome Back" : "Create Account"}
+        </h1>
+        <p className="text-muted-foreground text-center mb-8">
+          {isLogin ? "Sign in to your account" : "Join us today"}
+        </p>
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-foreground/80">Email</Label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="pl-10 bg-secondary/50 border-border/50 focus:border-primary"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="password" className="text-foreground/80">Password</Label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="pl-10 bg-secondary/50 border-border/50 focus:border-primary"
+                required
+                minLength={6}
+              />
+            </div>
+          </div>
+
+          <Button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-primary hover:bg-primary/90 glow-sm font-semibold text-primary-foreground"
+          >
+            {loading ? "Loading..." : isLogin ? (
+              <><LogIn className="mr-2 w-4 h-4" /> Sign In</>
+            ) : (
+              <><UserPlus className="mr-2 w-4 h-4" /> Sign Up</>
+            )}
+          </Button>
+        </form>
+
+        <p className="text-center mt-6 text-muted-foreground text-sm">
+          {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
+          <button
+            onClick={() => setIsLogin(!isLogin)}
+            className="text-primary hover:underline font-medium"
+          >
+            {isLogin ? "Sign Up" : "Sign In"}
+          </button>
+        </p>
+      </div>
+    </div>
+  );
+};
+
+export default Auth;
