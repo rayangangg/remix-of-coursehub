@@ -12,7 +12,7 @@ const Navbar = () => {
         <Link to="/" className="flex items-center gap-2">
           <BookOpen className="w-6 h-6 text-primary" />
           <span className="font-display font-bold text-xl text-foreground">
-            CourseHub
+            CoursesGLB
           </span>
         </Link>
 
