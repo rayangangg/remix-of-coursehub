@@ -597,7 +597,7 @@ const Admin = () => {
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-2 mb-8 flex-wrap">
+          <div className="flex gap-2 mb-8 overflow-x-auto pb-1">
             {[
               { key: "dashboard", icon: BarChart3, label: "Overview" },
               { key: "courses", icon: Package, label: "Courses" },
