@@ -39,7 +39,12 @@ const Admin = () => {
     group_link: "",
   });
 
-  // ===== QUERIES - load all data when admin is confirmed =====
+  const shouldLoadCourses = isAdmin && (activeTab === "dashboard" || activeTab === "courses" || !!managingSections);
+  const shouldLoadOrders = isAdmin && (activeTab === "dashboard" || activeTab === "orders");
+  const shouldLoadEnrollments = isAdmin && (activeTab === "dashboard" || activeTab === "enrollments");
+  const shouldLoadProfiles = isAdmin && activeTab === "users";
+
+  // ===== QUERIES =====
   const { data: courses, isLoading: coursesLoading } = useQuery({
     queryKey: ["admin-courses"],
     queryFn: async () => {
@@ -47,7 +52,7 @@ const Admin = () => {
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin,
+    enabled: shouldLoadCourses,
   });
 
   const { data: orders, isLoading: ordersLoading } = useQuery({
@@ -57,7 +62,7 @@ const Admin = () => {
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin,
+    enabled: shouldLoadOrders,
   });
 
   const { data: sections } = useQuery({
@@ -84,7 +89,7 @@ const Admin = () => {
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin,
+    enabled: shouldLoadEnrollments,
   });
 
   const { data: profiles, isLoading: profilesLoading } = useQuery({
@@ -94,29 +99,37 @@ const Admin = () => {
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin,
+    enabled: shouldLoadProfiles,
   });
 
   // ===== MUTATIONS =====
   const saveCourse = useMutation({
     mutationFn: async () => {
+      const title = courseForm.title.trim();
+      if (!title) throw new Error("Course title is required");
+
+      const priceBdt = Number(courseForm.price_bdt);
+      if (!Number.isFinite(priceBdt) || priceBdt < 0) {
+        throw new Error("Please enter a valid BDT price");
+      }
+
       const payload = {
-        title: courseForm.title,
-        description: courseForm.description || null,
-        image_url: courseForm.image_url || null,
-        video_url: courseForm.video_url || null,
-        price_bdt: Number(courseForm.price_bdt) || 0,
+        title,
+        description: courseForm.description.trim() || null,
+        image_url: courseForm.image_url.trim() || null,
+        video_url: courseForm.video_url.trim() || null,
+        price_bdt: priceBdt,
         price_usd: 0,
         is_published: courseForm.is_published,
-        instructor_name: courseForm.instructor_name || null,
-        instructor_title: courseForm.instructor_title || null,
+        instructor_name: courseForm.instructor_name.trim() || null,
+        instructor_title: courseForm.instructor_title.trim() || null,
         total_classes: Number(courseForm.total_classes) || 0,
         total_exams: Number(courseForm.total_exams) || 0,
         total_materials: Number(courseForm.total_materials) || 0,
-        category: courseForm.category || "Main",
-        promo_code: courseForm.promo_code || null,
+        category: courseForm.category.trim() || "Main",
+        promo_code: courseForm.promo_code.trim() || null,
         discount_percent: Number(courseForm.discount_percent) || 0,
-        group_link: courseForm.group_link || null,
+        group_link: courseForm.group_link.trim() || null,
       };
       if (editingCourse) {
         const { error } = await supabase.from("courses").update(payload).eq("id", editingCourse.id);
@@ -807,7 +820,7 @@ const Admin = () => {
                           </div>
                           <p className="text-sm text-muted-foreground">{order.email} · {order.phone}</p>
                           <p className="text-sm text-primary">
-                            {(order.courses as any)?.title} — {order.currency === "BDT" ? `৳${order.amount}` : `$${order.amount}`}
+                            {(order.courses as any)?.title} — ৳{order.amount}
                           </p>
                           <p className="text-xs text-muted-foreground">
                             {order.payment_method}
