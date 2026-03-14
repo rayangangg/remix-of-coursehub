@@ -318,6 +318,37 @@ const Admin = () => {
     },
   });
 
+  const saveSiteSettings = useMutation({
+    mutationFn: async () => {
+      const hue = Math.max(0, Math.min(360, Number(siteSettingsForm.primary_hue) || defaultSiteSettings.primary_hue));
+      const saturation = Math.max(0, Math.min(100, Number(siteSettingsForm.primary_saturation) || defaultSiteSettings.primary_saturation));
+      const lightness = Math.max(0, Math.min(100, Number(siteSettingsForm.primary_lightness) || defaultSiteSettings.primary_lightness));
+
+      const payload = {
+        is_default: true,
+        payment_bkash: siteSettingsForm.payment_bkash.trim() || defaultSiteSettings.payment_bkash,
+        payment_nagad: siteSettingsForm.payment_nagad.trim() || defaultSiteSettings.payment_nagad,
+        hero_badge: siteSettingsForm.hero_badge.trim() || defaultSiteSettings.hero_badge,
+        hero_title: siteSettingsForm.hero_title.trim() || defaultSiteSettings.hero_title,
+        hero_highlight: siteSettingsForm.hero_highlight.trim() || defaultSiteSettings.hero_highlight,
+        hero_description: siteSettingsForm.hero_description.trim() || defaultSiteSettings.hero_description,
+        primary_hue: hue,
+        primary_saturation: saturation,
+        primary_lightness: lightness,
+      };
+
+      const { error } = await supabase.from("site_settings").upsert(payload, { onConflict: "is_default" });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["site-settings"] });
+      toast({ title: "Website settings updated" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Settings update failed", description: error.message, variant: "destructive" });
+    },
+  });
+
   // ===== HELPERS =====
   const resetForm = () => {
     setCourseForm({
