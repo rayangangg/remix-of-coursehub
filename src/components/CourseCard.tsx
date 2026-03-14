@@ -8,7 +8,6 @@ interface Course {
   description: string | null;
   image_url: string | null;
   price_bdt: number;
-  price_usd: number;
 }
 
 const CourseCard = ({ course }: { course: Course }) => {
