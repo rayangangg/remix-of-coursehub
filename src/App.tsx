@@ -31,6 +31,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <SiteThemeSync />
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
