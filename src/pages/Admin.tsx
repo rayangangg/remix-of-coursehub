@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,18 +9,39 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { defaultSiteSettings } from "@/hooks/useSiteSettings";
 import {
-  BookOpen, Plus, Trash2, Edit, CheckCircle, XCircle, Clock,
-  Eye, EyeOff, Package, Users, Loader2, Layers, Video, UserPlus,
-  Search, BarChart3, ArrowLeft, GripVertical, Link as LinkIcon,
-  Copy, Download, Filter, RefreshCw
+  Plus,
+  Trash2,
+  Edit,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Eye,
+  EyeOff,
+  Package,
+  Users,
+  Loader2,
+  Layers,
+  Video,
+  UserPlus,
+  Search,
+  BarChart3,
+  ArrowLeft,
+  Link as LinkIcon,
+  RefreshCw,
+  Settings2,
+  Palette,
+  Smartphone,
 } from "lucide-react";
 
 const Admin = () => {
   const { session, isAdmin, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<"dashboard" | "courses" | "orders" | "enrollments" | "users">("dashboard");
+  const [activeTab, setActiveTab] = useState<
+    "dashboard" | "courses" | "orders" | "enrollments" | "users" | "settings"
+  >("dashboard");
   const [editingCourse, setEditingCourse] = useState<any>(null);
   const [showForm, setShowForm] = useState(false);
   const [managingSections, setManagingSections] = useState<string | null>(null);
@@ -29,6 +50,17 @@ const Admin = () => {
   const [addingLessonToSection, setAddingLessonToSection] = useState<string | null>(null);
   const [orderFilter, setOrderFilter] = useState<"all" | "pending" | "verified" | "rejected">("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [siteSettingsForm, setSiteSettingsForm] = useState({
+    payment_bkash: defaultSiteSettings.payment_bkash,
+    payment_nagad: defaultSiteSettings.payment_nagad,
+    hero_badge: defaultSiteSettings.hero_badge,
+    hero_title: defaultSiteSettings.hero_title,
+    hero_highlight: defaultSiteSettings.hero_highlight,
+    hero_description: defaultSiteSettings.hero_description,
+    primary_hue: String(defaultSiteSettings.primary_hue),
+    primary_saturation: String(defaultSiteSettings.primary_saturation),
+    primary_lightness: String(defaultSiteSettings.primary_lightness),
+  });
 
   const [courseForm, setCourseForm] = useState({
     title: "", description: "", image_url: "", video_url: "",
@@ -43,6 +75,7 @@ const Admin = () => {
   const shouldLoadOrders = isAdmin && (activeTab === "dashboard" || activeTab === "orders");
   const shouldLoadEnrollments = isAdmin && (activeTab === "dashboard" || activeTab === "enrollments");
   const shouldLoadProfiles = isAdmin && activeTab === "users";
+  const shouldLoadSiteSettings = isAdmin && (activeTab === "dashboard" || activeTab === "settings");
 
   // ===== QUERIES =====
   const { data: courses, isLoading: coursesLoading } = useQuery({
@@ -101,6 +134,39 @@ const Admin = () => {
     },
     enabled: shouldLoadProfiles,
   });
+
+  const { data: siteSettings, isLoading: siteSettingsLoading } = useQuery({
+    queryKey: ["site-settings"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("site_settings")
+        .select(
+          "is_default,payment_bkash,payment_nagad,hero_badge,hero_title,hero_highlight,hero_description,primary_hue,primary_saturation,primary_lightness",
+        )
+        .eq("is_default", true)
+        .maybeSingle();
+
+      if (error) throw error;
+      return { ...defaultSiteSettings, ...(data ?? {}) };
+    },
+    enabled: shouldLoadSiteSettings,
+  });
+
+  useEffect(() => {
+    if (!siteSettings) return;
+
+    setSiteSettingsForm({
+      payment_bkash: siteSettings.payment_bkash,
+      payment_nagad: siteSettings.payment_nagad,
+      hero_badge: siteSettings.hero_badge,
+      hero_title: siteSettings.hero_title,
+      hero_highlight: siteSettings.hero_highlight,
+      hero_description: siteSettings.hero_description,
+      primary_hue: String(siteSettings.primary_hue),
+      primary_saturation: String(siteSettings.primary_saturation),
+      primary_lightness: String(siteSettings.primary_lightness),
+    });
+  }, [siteSettings]);
 
   // ===== MUTATIONS =====
   const saveCourse = useMutation({
@@ -249,6 +315,37 @@ const Admin = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-courses"] });
       toast({ title: "Course visibility updated" });
+    },
+  });
+
+  const saveSiteSettings = useMutation({
+    mutationFn: async () => {
+      const hue = Math.max(0, Math.min(360, Number(siteSettingsForm.primary_hue) || defaultSiteSettings.primary_hue));
+      const saturation = Math.max(0, Math.min(100, Number(siteSettingsForm.primary_saturation) || defaultSiteSettings.primary_saturation));
+      const lightness = Math.max(0, Math.min(100, Number(siteSettingsForm.primary_lightness) || defaultSiteSettings.primary_lightness));
+
+      const payload = {
+        is_default: true,
+        payment_bkash: siteSettingsForm.payment_bkash.trim() || defaultSiteSettings.payment_bkash,
+        payment_nagad: siteSettingsForm.payment_nagad.trim() || defaultSiteSettings.payment_nagad,
+        hero_badge: siteSettingsForm.hero_badge.trim() || defaultSiteSettings.hero_badge,
+        hero_title: siteSettingsForm.hero_title.trim() || defaultSiteSettings.hero_title,
+        hero_highlight: siteSettingsForm.hero_highlight.trim() || defaultSiteSettings.hero_highlight,
+        hero_description: siteSettingsForm.hero_description.trim() || defaultSiteSettings.hero_description,
+        primary_hue: hue,
+        primary_saturation: saturation,
+        primary_lightness: lightness,
+      };
+
+      const { error } = await supabase.from("site_settings").upsert(payload, { onConflict: "is_default" });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["site-settings"] });
+      toast({ title: "Website settings updated" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Settings update failed", description: error.message, variant: "destructive" });
     },
   });
 
@@ -500,18 +597,19 @@ const Admin = () => {
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-2 mb-8 flex-wrap">
+          <div className="flex gap-2 mb-8 overflow-x-auto pb-1">
             {[
               { key: "dashboard", icon: BarChart3, label: "Overview" },
               { key: "courses", icon: Package, label: "Courses" },
               { key: "orders", icon: Users, label: "Orders", badge: pendingOrders },
               { key: "enrollments", icon: UserPlus, label: "Enrollments" },
               { key: "users", icon: Users, label: "Users" },
+              { key: "settings", icon: Settings2, label: "Website" },
             ].map((tab) => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key as any)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   activeTab === tab.key
                     ? "bg-primary text-primary-foreground"
                     : "bg-card text-muted-foreground hover:text-foreground border border-border/50"
@@ -553,6 +651,14 @@ const Admin = () => {
                 <div className="glass-card p-5">
                   <p className="text-xs text-muted-foreground mb-3">Total Orders</p>
                   <p className="text-lg font-display font-bold text-foreground">{orders?.length || 0}</p>
+                </div>
+              </div>
+
+              <div className="glass-card p-5">
+                <p className="text-xs text-muted-foreground mb-2">Live Website Settings</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                  <p className="text-foreground/90">bKash: <span className="font-mono">{siteSettings?.payment_bkash || defaultSiteSettings.payment_bkash}</span></p>
+                  <p className="text-foreground/90">Nagad: <span className="font-mono">{siteSettings?.payment_nagad || defaultSiteSettings.payment_nagad}</span></p>
                 </div>
               </div>
 
@@ -895,6 +1001,141 @@ const Admin = () => {
                   <p className="text-muted-foreground">No enrollments yet. Verify orders to auto-enroll students.</p>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* ===== WEBSITE SETTINGS TAB ===== */}
+          {activeTab === "settings" && (
+            <div className="space-y-6 animate-fade-in">
+              <div className="glass-card p-5">
+                <div className="flex items-center gap-2 mb-2">
+                  <Smartphone className="w-4 h-4 text-primary" />
+                  <h3 className="font-display font-semibold text-foreground">Payment Numbers</h3>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  These numbers are shown in checkout on mobile, tablet and desktop.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-foreground/80">bKash Number</Label>
+                    <Input
+                      value={siteSettingsForm.payment_bkash}
+                      onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, payment_bkash: e.target.value })}
+                      className="bg-secondary/50 border-border/50"
+                      placeholder="01XXXXXXXXX"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-foreground/80">Nagad Number</Label>
+                    <Input
+                      value={siteSettingsForm.payment_nagad}
+                      onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, payment_nagad: e.target.value })}
+                      className="bg-secondary/50 border-border/50"
+                      placeholder="01XXXXXXXXX"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="glass-card p-5">
+                <div className="flex items-center gap-2 mb-2">
+                  <Palette className="w-4 h-4 text-primary" />
+                  <h3 className="font-display font-semibold text-foreground">Website Colors</h3>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Update the global theme accent color in HSL values.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-foreground/80">Hue (0-360)</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={360}
+                      value={siteSettingsForm.primary_hue}
+                      onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, primary_hue: e.target.value })}
+                      className="bg-secondary/50 border-border/50"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-foreground/80">Saturation (0-100)</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={siteSettingsForm.primary_saturation}
+                      onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, primary_saturation: e.target.value })}
+                      className="bg-secondary/50 border-border/50"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-foreground/80">Lightness (0-100)</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={siteSettingsForm.primary_lightness}
+                      onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, primary_lightness: e.target.value })}
+                      className="bg-secondary/50 border-border/50"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="glass-card p-5">
+                <h3 className="font-display font-semibold text-foreground mb-2">Homepage Text</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Edit landing page hero texts without touching code.
+                </p>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-foreground/80">Badge Text</Label>
+                    <Input
+                      value={siteSettingsForm.hero_badge}
+                      onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, hero_badge: e.target.value })}
+                      className="bg-secondary/50 border-border/50"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-foreground/80">Hero Title</Label>
+                      <Input
+                        value={siteSettingsForm.hero_title}
+                        onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, hero_title: e.target.value })}
+                        className="bg-secondary/50 border-border/50"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-foreground/80">Hero Highlight</Label>
+                      <Input
+                        value={siteSettingsForm.hero_highlight}
+                        onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, hero_highlight: e.target.value })}
+                        className="bg-secondary/50 border-border/50"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-foreground/80">Hero Description</Label>
+                    <Textarea
+                      value={siteSettingsForm.hero_description}
+                      onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, hero_description: e.target.value })}
+                      rows={3}
+                      className="bg-secondary/50 border-border/50"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end">
+                <Button
+                  onClick={() => saveSiteSettings.mutate()}
+                  disabled={saveSiteSettings.isPending || siteSettingsLoading}
+                  className="btn-primary"
+                >
+                  {saveSiteSettings.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                  Save Website Settings
+                </Button>
+              </div>
             </div>
           )}
 

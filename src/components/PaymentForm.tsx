@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { Copy, CheckCircle, Loader2, Tag } from "lucide-react";
 
 interface Course {
@@ -21,6 +22,15 @@ const PaymentForm = ({ course }: { course: Course }) => {
   const [promoInput, setPromoInput] = useState("");
   const [promoApplied, setPromoApplied] = useState(false);
   const { toast } = useToast();
+  const { data: siteSettings } = useSiteSettings();
+
+  const paymentNumbers = useMemo(
+    () => ({
+      bkash: siteSettings?.payment_bkash?.trim() || "01633005730",
+      nagad: siteSettings?.payment_nagad?.trim() || "01711950646",
+    }),
+    [siteSettings],
+  );
 
   const [form, setForm] = useState({
     fullName: "", email: "", phone: "", transactionId: "",
@@ -122,10 +132,10 @@ const PaymentForm = ({ course }: { course: Course }) => {
       <div className="space-y-2 mb-4">
         <div className="rounded-lg border border-bkash/30 bg-bkash/5 p-3">
           <p className="text-xs text-muted-foreground mb-1">bKash (Personal)</p>
-          <div className="flex items-center justify-between">
-            <span className="font-mono font-bold text-foreground text-sm">01633005730</span>
-            <button type="button" onClick={() => copyNumber("01633005730", "bkash")}
-              className="flex items-center gap-1 text-xs text-bkash hover:text-bkash/80 transition-colors">
+          <div className="flex items-center justify-between gap-3">
+            <span className="font-mono font-bold text-foreground text-sm break-all">{paymentNumbers.bkash}</span>
+            <button type="button" onClick={() => copyNumber(paymentNumbers.bkash, "bkash")}
+              className="flex items-center gap-1 text-xs text-bkash hover:text-bkash/80 transition-colors flex-shrink-0">
               {copied === "bkash" ? <CheckCircle className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
               {copied === "bkash" ? "Copied!" : "Copy"}
             </button>
@@ -133,10 +143,10 @@ const PaymentForm = ({ course }: { course: Course }) => {
         </div>
         <div className="rounded-lg border border-nagad/30 bg-nagad/5 p-3">
           <p className="text-xs text-muted-foreground mb-1">Nagad (Personal)</p>
-          <div className="flex items-center justify-between">
-            <span className="font-mono font-bold text-foreground text-sm">01711950646</span>
-            <button type="button" onClick={() => copyNumber("01711950646", "nagad")}
-              className="flex items-center gap-1 text-xs text-nagad hover:text-nagad/80 transition-colors">
+          <div className="flex items-center justify-between gap-3">
+            <span className="font-mono font-bold text-foreground text-sm break-all">{paymentNumbers.nagad}</span>
+            <button type="button" onClick={() => copyNumber(paymentNumbers.nagad, "nagad")}
+              className="flex items-center gap-1 text-xs text-nagad hover:text-nagad/80 transition-colors flex-shrink-0">
               {copied === "nagad" ? <CheckCircle className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
               {copied === "nagad" ? "Copied!" : "Copy"}
             </button>
