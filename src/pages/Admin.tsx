@@ -245,7 +245,7 @@ const Admin = () => {
   const resetForm = () => {
     setCourseForm({
       title: "", description: "", image_url: "", video_url: "",
-      price_bdt: "", price_usd: "", is_published: false,
+      price_bdt: "", is_published: false,
       instructor_name: "", instructor_title: "",
       total_classes: "", total_exams: "", total_materials: "",
       category: "Main", promo_code: "", discount_percent: "",
