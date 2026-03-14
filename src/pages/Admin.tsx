@@ -277,7 +277,6 @@ const Admin = () => {
 
   // Stats
   const totalRevenueBDT = orders?.filter((o: any) => o.status === "verified" && o.currency === "BDT").reduce((s: number, o: any) => s + Number(o.amount), 0) || 0;
-  const totalRevenueUSD = orders?.filter((o: any) => o.status === "verified" && o.currency === "USD").reduce((s: number, o: any) => s + Number(o.amount), 0) || 0;
   const pendingOrders = orders?.filter((o: any) => o.status === "pending").length || 0;
   const totalEnrollments = enrollments?.length || 0;
   const publishedCourses = courses?.filter((c: any) => c.is_published).length || 0;
