@@ -152,6 +152,22 @@ const Admin = () => {
     enabled: shouldLoadSiteSettings,
   });
 
+  useEffect(() => {
+    if (!siteSettings) return;
+
+    setSiteSettingsForm({
+      payment_bkash: siteSettings.payment_bkash,
+      payment_nagad: siteSettings.payment_nagad,
+      hero_badge: siteSettings.hero_badge,
+      hero_title: siteSettings.hero_title,
+      hero_highlight: siteSettings.hero_highlight,
+      hero_description: siteSettings.hero_description,
+      primary_hue: String(siteSettings.primary_hue),
+      primary_saturation: String(siteSettings.primary_saturation),
+      primary_lightness: String(siteSettings.primary_lightness),
+    });
+  }, [siteSettings]);
+
   // ===== MUTATIONS =====
   const saveCourse = useMutation({
     mutationFn: async () => {
