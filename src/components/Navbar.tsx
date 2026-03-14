@@ -1,19 +1,34 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { BookOpen, LogOut, Shield, User, Search, Menu, X } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { BookOpen, LogOut, Shield, User, Menu, X, Loader2 } from "lucide-react";
 import { useState } from "react";
 
 const Navbar = () => {
-  const { session, isAdmin, signOut } = useAuth();
+  const { session, isAdmin, signOut, loading: authLoading } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/courses", label: "Courses" },
-    ...(session ? [{ href: "/dashboard", label: "My Courses" }] : []),
+    ...(session && !authLoading ? [{ href: "/dashboard", label: "My Courses" }] : []),
   ];
+
+  const handleSignOut = async () => {
+    await signOut();
+    setMobileOpen(false);
+    navigate("/");
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border/50">
@@ -25,16 +40,13 @@ const Navbar = () => {
           </span>
         </Link>
 
-        {/* Desktop Nav */}
         <div className="hidden md:flex items-center gap-6">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               to={link.href}
               className={`text-sm font-medium transition-colors ${
-                location.pathname === link.href
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground"
+                location.pathname === link.href ? "text-primary" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {link.label}
@@ -43,33 +55,54 @@ const Navbar = () => {
         </div>
 
         <div className="hidden md:flex items-center gap-3">
-          {isAdmin && (
-            <Link to="/admin">
-              <Button variant="outline" size="sm" className="border-primary/50 text-primary hover:bg-primary/10">
-                <Shield className="w-4 h-4 mr-1" /> Admin
-              </Button>
-            </Link>
-          )}
-          {session ? (
-            <Button variant="ghost" size="sm" onClick={signOut} className="text-muted-foreground hover:text-foreground">
-              <LogOut className="w-4 h-4 mr-1" /> Sign Out
-            </Button>
+          {authLoading ? (
+            <Loader2 className="w-4 h-4 text-primary animate-spin" />
+          ) : session ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="border-border/50">
+                  <User className="w-4 h-4 mr-2" /> Profile
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 bg-card border-border/50">
+                <DropdownMenuLabel className="text-xs text-muted-foreground truncate">
+                  {session.user.email}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/profile">My Profile</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/dashboard">My Courses</Link>
+                </DropdownMenuItem>
+                {isAdmin && (
+                  <DropdownMenuItem asChild>
+                    <Link to="/admin" className="text-primary">
+                      <Shield className="w-4 h-4 mr-2" /> Admin Panel
+                    </Link>
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={(event) => {
+                  event.preventDefault();
+                  handleSignOut();
+                }}>
+                  <LogOut className="w-4 h-4 mr-2" /> Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <Link to="/auth">
-              <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                Login
-              </Button>
+              <Button size="sm" className="btn-primary">Login</Button>
             </Link>
           )}
         </div>
 
-        {/* Mobile toggle */}
         <button className="md:hidden text-foreground" onClick={() => setMobileOpen(!mobileOpen)}>
           {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
       </div>
 
-      {/* Mobile menu */}
       {mobileOpen && (
         <div className="md:hidden bg-background border-b border-border/50 px-4 pb-4 space-y-2 animate-fade-in">
           {navLinks.map((link) => (
@@ -84,13 +117,28 @@ const Navbar = () => {
               {link.label}
             </Link>
           ))}
+
+          {session && !authLoading && (
+            <>
+              <Link to="/profile" onClick={() => setMobileOpen(false)} className="block py-2 text-sm font-medium text-muted-foreground">
+                My Profile
+              </Link>
+              <Link to="/dashboard" onClick={() => setMobileOpen(false)} className="block py-2 text-sm font-medium text-muted-foreground">
+                My Courses
+              </Link>
+            </>
+          )}
+
           {isAdmin && (
             <Link to="/admin" onClick={() => setMobileOpen(false)} className="block py-2 text-sm font-medium text-primary">
               Admin Panel
             </Link>
           )}
-          {session ? (
-            <button onClick={() => { signOut(); setMobileOpen(false); }} className="block py-2 text-sm text-muted-foreground">
+
+          {authLoading ? (
+            <div className="py-2 text-sm text-muted-foreground">Checking account...</div>
+          ) : session ? (
+            <button onClick={handleSignOut} className="block py-2 text-sm text-muted-foreground">
               Sign Out
             </button>
           ) : (

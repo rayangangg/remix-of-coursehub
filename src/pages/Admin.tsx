@@ -870,7 +870,9 @@ const Admin = () => {
               <p className="text-sm text-muted-foreground mb-4">
                 Students are automatically enrolled when you verify their orders. Total: {enrollments?.length || 0}
               </p>
-              {enrollments && enrollments.length > 0 ? (
+              {enrollmentsLoading ? (
+                <div className="space-y-3">{[1, 2, 3].map((i) => <div key={i} className="glass-card h-20 animate-pulse" />)}</div>
+              ) : enrollments && enrollments.length > 0 ? (
                 enrollments.map((enrollment: any) => (
                   <div key={enrollment.id} className="glass-card p-4 flex items-center justify-between">
                     <div>
@@ -902,7 +904,9 @@ const Admin = () => {
               <p className="text-sm text-muted-foreground mb-4">
                 Registered users: {profiles?.length || 0}
               </p>
-              {profiles && profiles.length > 0 ? (
+              {profilesLoading ? (
+                <div className="space-y-3">{[1, 2, 3].map((i) => <div key={i} className="glass-card h-20 animate-pulse" />)}</div>
+              ) : profiles && profiles.length > 0 ? (
                 profiles.map((profile: any) => (
                   <div key={profile.id} className="glass-card p-4 flex items-center gap-4">
                     <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
