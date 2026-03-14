@@ -39,7 +39,12 @@ const Admin = () => {
     group_link: "",
   });
 
-  // ===== QUERIES - load all data when admin is confirmed =====
+  const shouldLoadCourses = isAdmin && (activeTab === "dashboard" || activeTab === "courses" || !!managingSections);
+  const shouldLoadOrders = isAdmin && (activeTab === "dashboard" || activeTab === "orders");
+  const shouldLoadEnrollments = isAdmin && (activeTab === "dashboard" || activeTab === "enrollments");
+  const shouldLoadProfiles = isAdmin && activeTab === "users";
+
+  // ===== QUERIES =====
   const { data: courses, isLoading: coursesLoading } = useQuery({
     queryKey: ["admin-courses"],
     queryFn: async () => {
@@ -47,7 +52,7 @@ const Admin = () => {
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin,
+    enabled: shouldLoadCourses,
   });
 
   const { data: orders, isLoading: ordersLoading } = useQuery({
@@ -57,7 +62,7 @@ const Admin = () => {
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin,
+    enabled: shouldLoadOrders,
   });
 
   const { data: sections } = useQuery({
@@ -84,7 +89,7 @@ const Admin = () => {
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin,
+    enabled: shouldLoadEnrollments,
   });
 
   const { data: profiles, isLoading: profilesLoading } = useQuery({
@@ -94,7 +99,7 @@ const Admin = () => {
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin,
+    enabled: shouldLoadProfiles,
   });
 
   // ===== MUTATIONS =====
