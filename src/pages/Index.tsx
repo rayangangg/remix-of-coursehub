@@ -22,6 +22,8 @@ const Index = () => {
     },
   });
 
+  const { data: siteSettings } = useSiteSettings();
+
   const stats = [
     { icon: Users, value: "10k+", label: "Students" },
     { icon: PlayCircle, value: "500+", label: "Lessons" },
