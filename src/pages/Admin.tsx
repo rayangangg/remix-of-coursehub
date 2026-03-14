@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,11 +9,30 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { defaultSiteSettings } from "@/hooks/useSiteSettings";
 import {
-  BookOpen, Plus, Trash2, Edit, CheckCircle, XCircle, Clock,
-  Eye, EyeOff, Package, Users, Loader2, Layers, Video, UserPlus,
-  Search, BarChart3, ArrowLeft, GripVertical, Link as LinkIcon,
-  Copy, Download, Filter, RefreshCw
+  Plus,
+  Trash2,
+  Edit,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Eye,
+  EyeOff,
+  Package,
+  Users,
+  Loader2,
+  Layers,
+  Video,
+  UserPlus,
+  Search,
+  BarChart3,
+  ArrowLeft,
+  Link as LinkIcon,
+  RefreshCw,
+  Settings2,
+  Palette,
+  Smartphone,
 } from "lucide-react";
 
 const Admin = () => {
