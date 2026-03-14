@@ -517,14 +517,10 @@ const Admin = () => {
           {/* ===== DASHBOARD TAB ===== */}
           {activeTab === "dashboard" && (
             <div className="space-y-6 animate-fade-in">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="glass-card p-5">
-                  <p className="text-xs text-muted-foreground mb-1">Revenue (BDT)</p>
+                  <p className="text-xs text-muted-foreground mb-1">Total Revenue</p>
                   <p className="text-2xl font-display font-bold text-primary">৳{totalRevenueBDT.toLocaleString()}</p>
-                </div>
-                <div className="glass-card p-5">
-                  <p className="text-xs text-muted-foreground mb-1">Revenue (USD)</p>
-                  <p className="text-2xl font-display font-bold text-foreground">${totalRevenueUSD.toLocaleString()}</p>
                 </div>
                 <div className="glass-card p-5">
                   <p className="text-xs text-muted-foreground mb-1">Pending Orders</p>
