@@ -10,7 +10,6 @@ interface Course {
   id: string;
   title: string;
   price_bdt: number;
-  price_usd: number;
   promo_code?: string | null;
   discount_percent?: number | null;
 }
