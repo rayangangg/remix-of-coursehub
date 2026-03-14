@@ -643,15 +643,10 @@ const Admin = () => {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div className="space-y-2">
                         <Label className="text-foreground/80">Price BDT ৳</Label>
                         <Input type="number" value={courseForm.price_bdt} onChange={(e) => setCourseForm({ ...courseForm, price_bdt: e.target.value })}
-                          className="bg-secondary/50 border-border/50" required />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-foreground/80">Price USD $</Label>
-                        <Input type="number" value={courseForm.price_usd} onChange={(e) => setCourseForm({ ...courseForm, price_usd: e.target.value })}
                           className="bg-secondary/50 border-border/50" required />
                       </div>
                       <div className="space-y-2">
