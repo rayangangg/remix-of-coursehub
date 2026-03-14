@@ -75,6 +75,7 @@ const Admin = () => {
   const shouldLoadOrders = isAdmin && (activeTab === "dashboard" || activeTab === "orders");
   const shouldLoadEnrollments = isAdmin && (activeTab === "dashboard" || activeTab === "enrollments");
   const shouldLoadProfiles = isAdmin && activeTab === "users";
+  const shouldLoadSiteSettings = isAdmin && (activeTab === "dashboard" || activeTab === "settings");
 
   // ===== QUERIES =====
   const { data: courses, isLoading: coursesLoading } = useQuery({
