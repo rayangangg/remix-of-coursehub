@@ -262,7 +262,6 @@ const Admin = () => {
       image_url: course.image_url || "",
       video_url: course.video_url || "",
       price_bdt: String(course.price_bdt),
-      price_usd: String(course.price_usd),
       is_published: course.is_published,
       instructor_name: course.instructor_name || "",
       instructor_title: course.instructor_title || "",
