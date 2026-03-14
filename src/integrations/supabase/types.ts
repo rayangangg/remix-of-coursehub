@@ -326,6 +326,54 @@ export type Database = {
         }
         Relationships: []
       }
+      site_settings: {
+        Row: {
+          created_at: string
+          hero_badge: string
+          hero_description: string
+          hero_highlight: string
+          hero_title: string
+          id: string
+          is_default: boolean
+          payment_bkash: string
+          payment_nagad: string
+          primary_hue: number
+          primary_lightness: number
+          primary_saturation: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          hero_badge?: string
+          hero_description?: string
+          hero_highlight?: string
+          hero_title?: string
+          id?: string
+          is_default?: boolean
+          payment_bkash?: string
+          payment_nagad?: string
+          primary_hue?: number
+          primary_lightness?: number
+          primary_saturation?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          hero_badge?: string
+          hero_description?: string
+          hero_highlight?: string
+          hero_title?: string
+          id?: string
+          is_default?: boolean
+          payment_bkash?: string
+          payment_nagad?: string
+          primary_hue?: number
+          primary_lightness?: number
+          primary_saturation?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
