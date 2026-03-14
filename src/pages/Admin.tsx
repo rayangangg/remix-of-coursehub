@@ -1004,6 +1004,141 @@ const Admin = () => {
             </div>
           )}
 
+          {/* ===== WEBSITE SETTINGS TAB ===== */}
+          {activeTab === "settings" && (
+            <div className="space-y-6 animate-fade-in">
+              <div className="glass-card p-5">
+                <div className="flex items-center gap-2 mb-2">
+                  <Smartphone className="w-4 h-4 text-primary" />
+                  <h3 className="font-display font-semibold text-foreground">Payment Numbers</h3>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  These numbers are shown in checkout on mobile, tablet and desktop.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-foreground/80">bKash Number</Label>
+                    <Input
+                      value={siteSettingsForm.payment_bkash}
+                      onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, payment_bkash: e.target.value })}
+                      className="bg-secondary/50 border-border/50"
+                      placeholder="01XXXXXXXXX"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-foreground/80">Nagad Number</Label>
+                    <Input
+                      value={siteSettingsForm.payment_nagad}
+                      onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, payment_nagad: e.target.value })}
+                      className="bg-secondary/50 border-border/50"
+                      placeholder="01XXXXXXXXX"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="glass-card p-5">
+                <div className="flex items-center gap-2 mb-2">
+                  <Palette className="w-4 h-4 text-primary" />
+                  <h3 className="font-display font-semibold text-foreground">Website Colors</h3>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Update the global theme accent color in HSL values.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-foreground/80">Hue (0-360)</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={360}
+                      value={siteSettingsForm.primary_hue}
+                      onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, primary_hue: e.target.value })}
+                      className="bg-secondary/50 border-border/50"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-foreground/80">Saturation (0-100)</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={siteSettingsForm.primary_saturation}
+                      onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, primary_saturation: e.target.value })}
+                      className="bg-secondary/50 border-border/50"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-foreground/80">Lightness (0-100)</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={siteSettingsForm.primary_lightness}
+                      onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, primary_lightness: e.target.value })}
+                      className="bg-secondary/50 border-border/50"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="glass-card p-5">
+                <h3 className="font-display font-semibold text-foreground mb-2">Homepage Text</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Edit landing page hero texts without touching code.
+                </p>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-foreground/80">Badge Text</Label>
+                    <Input
+                      value={siteSettingsForm.hero_badge}
+                      onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, hero_badge: e.target.value })}
+                      className="bg-secondary/50 border-border/50"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-foreground/80">Hero Title</Label>
+                      <Input
+                        value={siteSettingsForm.hero_title}
+                        onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, hero_title: e.target.value })}
+                        className="bg-secondary/50 border-border/50"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-foreground/80">Hero Highlight</Label>
+                      <Input
+                        value={siteSettingsForm.hero_highlight}
+                        onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, hero_highlight: e.target.value })}
+                        className="bg-secondary/50 border-border/50"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-foreground/80">Hero Description</Label>
+                    <Textarea
+                      value={siteSettingsForm.hero_description}
+                      onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, hero_description: e.target.value })}
+                      rows={3}
+                      className="bg-secondary/50 border-border/50"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end">
+                <Button
+                  onClick={() => saveSiteSettings.mutate()}
+                  disabled={saveSiteSettings.isPending || siteSettingsLoading}
+                  className="btn-primary"
+                >
+                  {saveSiteSettings.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                  Save Website Settings
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* ===== USERS TAB ===== */}
           {activeTab === "users" && (
             <div className="space-y-3 animate-fade-in">
