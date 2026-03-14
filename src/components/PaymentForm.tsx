@@ -15,7 +15,7 @@ interface Course {
 }
 
 const PaymentForm = ({ course }: { course: Course }) => {
-  const [tab, setTab] = useState<"local" | "international">("local");
+  const [tab, setTab] = useState<"local">("local");
   const [copied, setCopied] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);

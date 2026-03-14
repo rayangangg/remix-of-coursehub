@@ -721,7 +721,7 @@ const Admin = () => {
                             <span className="text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded">{course.category}</span>
                           </div>
                           <p className="text-sm text-muted-foreground">
-                            ৳{course.price_bdt} / ${course.price_usd}
+                            ৳{course.price_bdt}
                             {course.discount_percent > 0 && (
                               <span className="text-primary ml-2">-{course.discount_percent}%</span>
                             )}
