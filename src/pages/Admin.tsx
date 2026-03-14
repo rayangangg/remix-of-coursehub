@@ -820,7 +820,7 @@ const Admin = () => {
                           </div>
                           <p className="text-sm text-muted-foreground">{order.email} · {order.phone}</p>
                           <p className="text-sm text-primary">
-                            {(order.courses as any)?.title} — {order.currency === "BDT" ? `৳${order.amount}` : `$${order.amount}`}
+                            {(order.courses as any)?.title} — ৳{order.amount}
                           </p>
                           <p className="text-xs text-muted-foreground">
                             {order.payment_method}
