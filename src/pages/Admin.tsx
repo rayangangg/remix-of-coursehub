@@ -654,6 +654,14 @@ const Admin = () => {
                 </div>
               </div>
 
+              <div className="glass-card p-5">
+                <p className="text-xs text-muted-foreground mb-2">Live Website Settings</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                  <p className="text-foreground/90">bKash: <span className="font-mono">{siteSettings?.payment_bkash || defaultSiteSettings.payment_bkash}</span></p>
+                  <p className="text-foreground/90">Nagad: <span className="font-mono">{siteSettings?.payment_nagad || defaultSiteSettings.payment_nagad}</span></p>
+                </div>
+              </div>
+
               {/* Recent Pending Orders */}
               {pendingOrders > 0 && (
                 <div>
