@@ -39,8 +39,7 @@ const CourseCard = ({ course }: { course: Course }) => {
           )}
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-primary font-bold text-lg font-display">BDT {course.price_bdt}</p>
-              <p className="text-muted-foreground text-xs">${course.price_usd} USD</p>
+              <p className="text-primary font-bold text-lg font-display">৳{course.price_bdt}</p>
             </div>
             <Button size="sm" className="btn-primary">
               Buy Now
