@@ -108,7 +108,7 @@ const Admin = () => {
         image_url: courseForm.image_url || null,
         video_url: courseForm.video_url || null,
         price_bdt: Number(courseForm.price_bdt) || 0,
-        price_usd: Number(courseForm.price_usd) || 0,
+        price_usd: 0,
         is_published: courseForm.is_published,
         instructor_name: courseForm.instructor_name || null,
         instructor_title: courseForm.instructor_title || null,
