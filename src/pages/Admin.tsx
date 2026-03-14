@@ -135,6 +135,23 @@ const Admin = () => {
     enabled: shouldLoadProfiles,
   });
 
+  const { data: siteSettings, isLoading: siteSettingsLoading } = useQuery({
+    queryKey: ["site-settings"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("site_settings")
+        .select(
+          "is_default,payment_bkash,payment_nagad,hero_badge,hero_title,hero_highlight,hero_description,primary_hue,primary_saturation,primary_lightness",
+        )
+        .eq("is_default", true)
+        .maybeSingle();
+
+      if (error) throw error;
+      return { ...defaultSiteSettings, ...(data ?? {}) };
+    },
+    enabled: shouldLoadSiteSettings,
+  });
+
   // ===== MUTATIONS =====
   const saveCourse = useMutation({
     mutationFn: async () => {
