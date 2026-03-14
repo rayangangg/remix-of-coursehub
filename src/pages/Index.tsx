@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import { BookOpen, Users, PlayCircle, GraduationCap, FileText, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 const Index = () => {
   const { data: courses, isLoading } = useQuery({
