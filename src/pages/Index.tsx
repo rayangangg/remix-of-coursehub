@@ -41,14 +41,16 @@ const Index = () => {
           <div className="container mx-auto px-4 py-16 md:py-24">
             <div className="max-w-3xl mx-auto text-center space-y-6">
               <div className="inline-block bg-primary/20 border border-primary/40 rounded-lg px-4 py-2 mb-4">
-                <span className="text-primary font-display font-semibold text-lg">Welcome to CourseHUB</span>
+                <span className="text-primary font-display font-semibold text-lg">
+                  {siteSettings?.hero_badge || "Welcome to CourseHUB"}
+                </span>
               </div>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-foreground leading-tight">
-                Master New Skills with
-                <span className="text-gradient block mt-2">Premium Online Courses</span>
+                {siteSettings?.hero_title || "Master New Skills with"}
+                <span className="text-gradient block mt-2">{siteSettings?.hero_highlight || "Premium Online Courses"}</span>
               </h1>
               <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-                Join thousands of students learning from expert instructors. Pay with bKash, Nagad, or international cards.
+                {siteSettings?.hero_description || "Join thousands of students learning from expert instructors. Pay with bKash and Nagad."}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
                 <Link to="/courses">
