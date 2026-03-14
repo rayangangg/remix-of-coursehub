@@ -39,9 +39,7 @@ const Admin = () => {
     group_link: "",
   });
 
-  // ===== QUERIES =====
-  const shouldLoadDashboardStats = activeTab === "dashboard";
-
+  // ===== QUERIES - load all data when admin is confirmed =====
   const { data: courses, isLoading: coursesLoading } = useQuery({
     queryKey: ["admin-courses"],
     queryFn: async () => {
@@ -49,7 +47,7 @@ const Admin = () => {
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin && (activeTab === "courses" || managingSections !== null || shouldLoadDashboardStats),
+    enabled: isAdmin,
   });
 
   const { data: orders, isLoading: ordersLoading } = useQuery({
@@ -59,7 +57,7 @@ const Admin = () => {
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin && (activeTab === "orders" || shouldLoadDashboardStats),
+    enabled: isAdmin,
   });
 
   const { data: sections } = useQuery({
@@ -73,7 +71,7 @@ const Admin = () => {
       if (error) throw error;
       return data;
     },
-    enabled: !!managingSections,
+    enabled: isAdmin && !!managingSections,
   });
 
   const { data: enrollments, isLoading: enrollmentsLoading } = useQuery({
@@ -86,7 +84,7 @@ const Admin = () => {
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin && (activeTab === "enrollments" || shouldLoadDashboardStats),
+    enabled: isAdmin,
   });
 
   const { data: profiles, isLoading: profilesLoading } = useQuery({
@@ -96,7 +94,7 @@ const Admin = () => {
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin && activeTab === "users",
+    enabled: isAdmin,
   });
 
   // ===== MUTATIONS =====
@@ -279,7 +277,6 @@ const Admin = () => {
 
   // Stats
   const totalRevenueBDT = orders?.filter((o: any) => o.status === "verified" && o.currency === "BDT").reduce((s: number, o: any) => s + Number(o.amount), 0) || 0;
-  const totalRevenueUSD = orders?.filter((o: any) => o.status === "verified" && o.currency === "USD").reduce((s: number, o: any) => s + Number(o.amount), 0) || 0;
   const pendingOrders = orders?.filter((o: any) => o.status === "pending").length || 0;
   const totalEnrollments = enrollments?.length || 0;
   const publishedCourses = courses?.filter((c: any) => c.is_published).length || 0;
@@ -520,14 +517,10 @@ const Admin = () => {
           {/* ===== DASHBOARD TAB ===== */}
           {activeTab === "dashboard" && (
             <div className="space-y-6 animate-fade-in">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="glass-card p-5">
-                  <p className="text-xs text-muted-foreground mb-1">Revenue (BDT)</p>
+                  <p className="text-xs text-muted-foreground mb-1">Total Revenue</p>
                   <p className="text-2xl font-display font-bold text-primary">৳{totalRevenueBDT.toLocaleString()}</p>
-                </div>
-                <div className="glass-card p-5">
-                  <p className="text-xs text-muted-foreground mb-1">Revenue (USD)</p>
-                  <p className="text-2xl font-display font-bold text-foreground">${totalRevenueUSD.toLocaleString()}</p>
                 </div>
                 <div className="glass-card p-5">
                   <p className="text-xs text-muted-foreground mb-1">Pending Orders</p>
