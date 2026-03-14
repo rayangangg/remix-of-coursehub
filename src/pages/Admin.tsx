@@ -609,7 +609,7 @@ const Admin = () => {
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key as any)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   activeTab === tab.key
                     ? "bg-primary text-primary-foreground"
                     : "bg-card text-muted-foreground hover:text-foreground border border-border/50"
