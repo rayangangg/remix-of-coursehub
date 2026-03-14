@@ -5,11 +5,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import Navbar from "@/components/Navbar";
 import {
-  PlayCircle, CheckCircle, ChevronDown, ChevronUp, BookOpen,
-  ArrowLeft, Loader2, Video
+  PlayCircle,
+  CheckCircle,
+  ChevronDown,
+  ChevronUp,
+  ArrowLeft,
+  Loader2,
+  Video,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { getEmbeddableVideoUrl, isDirectPlayableVideoUrl } from "@/lib/video";
 
 const CoursePlayer = () => {
   const { id } = useParams<{ id: string }>();
@@ -18,7 +24,6 @@ const CoursePlayer = () => {
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
 
-  // Check enrollment
   const { data: enrollment, isLoading: enrollLoading } = useQuery({
     queryKey: ["enrollment", id, session?.user?.id],
     queryFn: async () => {
@@ -34,22 +39,16 @@ const CoursePlayer = () => {
     enabled: !!id && !!session?.user?.id,
   });
 
-  // Course
   const { data: course } = useQuery({
     queryKey: ["course", id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("courses")
-        .select("*")
-        .eq("id", id!)
-        .single();
+      const { data, error } = await supabase.from("courses").select("*").eq("id", id!).single();
       if (error) throw error;
       return data;
     },
     enabled: !!id,
   });
 
-  // Sections with lessons
   const { data: sections } = useQuery({
     queryKey: ["course-sections", id],
     queryFn: async () => {
@@ -64,7 +63,6 @@ const CoursePlayer = () => {
     enabled: !!id,
   });
 
-  // Lesson progress
   const { data: progress } = useQuery({
     queryKey: ["lesson-progress", id, session?.user?.id],
     queryFn: async () => {
@@ -81,13 +79,12 @@ const CoursePlayer = () => {
 
   const completedLessonIds = new Set(progress?.filter((p) => p.completed).map((p) => p.lesson_id));
 
-  // All lessons flat
   const allLessons =
     sections
       ?.flatMap((s) =>
         ((s.lessons as any[]) || [])
           .sort((a: any, b: any) => a.sort_order - b.sort_order)
-          .map((l: any) => ({ ...l, sectionTitle: s.title }))
+          .map((l: any) => ({ ...l, sectionTitle: s.title })),
       ) || [];
 
   const totalLessons = allLessons.length;
@@ -95,8 +92,8 @@ const CoursePlayer = () => {
   const progressPercent = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
 
   const activeLesson = allLessons.find((l) => l.id === activeLessonId) || allLessons[0];
+  const activeLessonVideoUrl = getEmbeddableVideoUrl(activeLesson?.video_url);
 
-  // Auto-expand all sections and pick first lesson
   useEffect(() => {
     if (sections && sections.length > 0) {
       setExpandedSections(new Set(sections.map((s) => s.id)));
@@ -104,9 +101,8 @@ const CoursePlayer = () => {
         setActiveLessonId(allLessons[0].id);
       }
     }
-  }, [sections]);
+  }, [sections, allLessons, activeLessonId]);
 
-  // Mark lesson complete
   const markComplete = useMutation({
     mutationFn: async (lessonId: string) => {
       const { error } = await supabase.from("lesson_progress").upsert(
@@ -117,7 +113,7 @@ const CoursePlayer = () => {
           completed: true,
           completed_at: new Date().toISOString(),
         },
-        { onConflict: "user_id,lesson_id" }
+        { onConflict: "user_id,lesson_id" },
       );
       if (error) throw error;
     },
@@ -150,43 +146,48 @@ const CoursePlayer = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="pt-16">
-        {/* Course title bar */}
         <div className="bg-card border-b border-border/30 px-4 py-3">
           <div className="container mx-auto flex items-center gap-3">
             <Link to="/dashboard" className="text-muted-foreground hover:text-foreground">
               <ArrowLeft className="w-5 h-5" />
             </Link>
-            <h1 className="font-display font-semibold text-foreground text-sm md:text-base truncate">
-              {course?.title}
-            </h1>
+            <h1 className="font-display font-semibold text-foreground text-sm md:text-base truncate">{course?.title}</h1>
           </div>
         </div>
 
         <div className="flex flex-col lg:flex-row min-h-[calc(100vh-8rem)]">
-          {/* Video Player Area */}
           <div className="flex-1 flex flex-col">
-            {/* Video */}
             <div className="bg-black">
-              {activeLesson?.video_url ? (
+              {activeLessonVideoUrl ? (
                 <div className="aspect-video max-h-[60vh] mx-auto">
-                  <iframe
-                    src={activeLesson.video_url.replace("watch?v=", "embed/")}
-                    className="w-full h-full"
-                    allowFullScreen
-                    title={activeLesson.title}
-                  />
+                  {isDirectPlayableVideoUrl(activeLessonVideoUrl) ? (
+                    <video
+                      src={activeLessonVideoUrl}
+                      className="w-full h-full"
+                      controls
+                      playsInline
+                      preload="metadata"
+                    />
+                  ) : (
+                    <iframe
+                      src={activeLessonVideoUrl}
+                      className="w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                      title={activeLesson.title}
+                    />
+                  )}
                 </div>
               ) : (
                 <div className="aspect-video max-h-[60vh] mx-auto flex items-center justify-center bg-secondary">
                   <div className="text-center text-muted-foreground">
                     <PlayCircle className="w-16 h-16 mx-auto mb-3 opacity-30" />
-                    <p className="text-sm">No video available for this lesson</p>
+                    <p className="text-sm">No playable video found for this lesson</p>
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Lesson info below video */}
             <div className="p-4 md:p-6 border-b border-border/30">
               <p className="text-muted-foreground text-xs mb-1">{activeLesson?.sectionTitle}</p>
               <h2 className="font-display font-semibold text-foreground text-lg mb-3">
@@ -211,9 +212,7 @@ const CoursePlayer = () => {
             </div>
           </div>
 
-          {/* Sidebar - Course Content */}
           <div className="lg:w-96 border-l border-border/30 bg-card/50 overflow-y-auto max-h-[calc(100vh-8rem)]">
-            {/* Progress */}
             <div className="p-4 border-b border-border/30">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-muted-foreground">Course Progress</span>
@@ -222,11 +221,10 @@ const CoursePlayer = () => {
               <Progress value={progressPercent} className="h-2" />
             </div>
 
-            {/* Sections */}
             <div>
               {sections?.map((section) => {
                 const sectionLessons = ((section.lessons as any[]) || []).sort(
-                  (a: any, b: any) => a.sort_order - b.sort_order
+                  (a: any, b: any) => a.sort_order - b.sort_order,
                 );
                 return (
                   <div key={section.id}>
@@ -253,9 +251,7 @@ const CoursePlayer = () => {
                             key={lesson.id}
                             onClick={() => setActiveLessonId(lesson.id)}
                             className={`w-full flex items-center gap-3 px-6 py-3 text-left text-sm transition-colors border-b border-border/10 ${
-                              isActive
-                                ? "bg-primary/10 border-l-2 border-l-primary"
-                                : "hover:bg-secondary/30"
+                              isActive ? "bg-primary/10 border-l-2 border-l-primary" : "hover:bg-secondary/30"
                             }`}
                           >
                             {isCompleted ? (
@@ -263,9 +259,7 @@ const CoursePlayer = () => {
                             ) : (
                               <PlayCircle className="w-4 h-4 text-primary flex-shrink-0" />
                             )}
-                            <span className={`${isActive ? "text-foreground" : "text-muted-foreground"}`}>
-                              {lesson.title}
-                            </span>
+                            <span className={`${isActive ? "text-foreground" : "text-muted-foreground"}`}>{lesson.title}</span>
                           </button>
                         );
                       })}
