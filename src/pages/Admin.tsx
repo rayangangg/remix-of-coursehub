@@ -40,6 +40,8 @@ const Admin = () => {
   });
 
   // ===== QUERIES =====
+  const shouldLoadDashboardStats = activeTab === "dashboard";
+
   const { data: courses, isLoading: coursesLoading } = useQuery({
     queryKey: ["admin-courses"],
     queryFn: async () => {
@@ -47,7 +49,7 @@ const Admin = () => {
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin,
+    enabled: isAdmin && (activeTab === "courses" || managingSections !== null || shouldLoadDashboardStats),
   });
 
   const { data: orders, isLoading: ordersLoading } = useQuery({
@@ -57,7 +59,7 @@ const Admin = () => {
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin,
+    enabled: isAdmin && (activeTab === "orders" || shouldLoadDashboardStats),
   });
 
   const { data: sections } = useQuery({
@@ -74,7 +76,7 @@ const Admin = () => {
     enabled: !!managingSections,
   });
 
-  const { data: enrollments } = useQuery({
+  const { data: enrollments, isLoading: enrollmentsLoading } = useQuery({
     queryKey: ["admin-enrollments"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -84,10 +86,10 @@ const Admin = () => {
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin,
+    enabled: isAdmin && (activeTab === "enrollments" || shouldLoadDashboardStats),
   });
 
-  const { data: profiles } = useQuery({
+  const { data: profiles, isLoading: profilesLoading } = useQuery({
     queryKey: ["admin-profiles"],
     queryFn: async () => {
       const { data, error } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
