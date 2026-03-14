@@ -39,7 +39,9 @@ const Admin = () => {
   const { session, isAdmin, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<"dashboard" | "courses" | "orders" | "enrollments" | "users">("dashboard");
+  const [activeTab, setActiveTab] = useState<
+    "dashboard" | "courses" | "orders" | "enrollments" | "users" | "settings"
+  >("dashboard");
   const [editingCourse, setEditingCourse] = useState<any>(null);
   const [showForm, setShowForm] = useState(false);
   const [managingSections, setManagingSections] = useState<string | null>(null);
@@ -48,6 +50,17 @@ const Admin = () => {
   const [addingLessonToSection, setAddingLessonToSection] = useState<string | null>(null);
   const [orderFilter, setOrderFilter] = useState<"all" | "pending" | "verified" | "rejected">("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [siteSettingsForm, setSiteSettingsForm] = useState({
+    payment_bkash: defaultSiteSettings.payment_bkash,
+    payment_nagad: defaultSiteSettings.payment_nagad,
+    hero_badge: defaultSiteSettings.hero_badge,
+    hero_title: defaultSiteSettings.hero_title,
+    hero_highlight: defaultSiteSettings.hero_highlight,
+    hero_description: defaultSiteSettings.hero_description,
+    primary_hue: String(defaultSiteSettings.primary_hue),
+    primary_saturation: String(defaultSiteSettings.primary_saturation),
+    primary_lightness: String(defaultSiteSettings.primary_lightness),
+  });
 
   const [courseForm, setCourseForm] = useState({
     title: "", description: "", image_url: "", video_url: "",
