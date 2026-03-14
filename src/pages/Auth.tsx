@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { LogIn, UserPlus, Mail, Lock } from "lucide-react";
+import { LogIn, UserPlus, Mail, Lock, BookOpen } from "lucide-react";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -12,6 +14,15 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { session } = useAuth();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (session) {
+      navigate("/dashboard");
+    }
+  }, [session, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,6 +32,7 @@ const Auth = () => {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast({ title: "Welcome back!" });
+        navigate("/dashboard");
       } else {
         const { error } = await supabase.auth.signUp({
           email,
@@ -40,11 +52,19 @@ const Auth = () => {
   return (
     <div className="min-h-screen bg-background bg-gradient-hero flex items-center justify-center p-4">
       <div className="glass-card p-8 w-full max-w-md animate-fade-in">
-        <h1 className="text-3xl font-display font-bold text-gradient text-center mb-2">
+        {/* Logo */}
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <BookOpen className="w-7 h-7 text-primary" />
+          <span className="font-display font-bold text-2xl text-primary">
+            Course<span className="text-foreground">HUB</span>
+          </span>
+        </div>
+
+        <h1 className="text-2xl font-display font-bold text-foreground text-center mb-1">
           {isLogin ? "Welcome Back" : "Create Account"}
         </h1>
-        <p className="text-muted-foreground text-center mb-8">
-          {isLogin ? "Sign in to your account" : "Join us today"}
+        <p className="text-muted-foreground text-center text-sm mb-8">
+          {isLogin ? "Sign in to access your courses" : "Join CourseHUB today"}
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -84,7 +104,7 @@ const Auth = () => {
           <Button
             type="submit"
             disabled={loading}
-            className="w-full bg-primary hover:bg-primary/90 glow-sm font-semibold text-primary-foreground"
+            className="w-full btn-primary py-5 glow-sm font-semibold"
           >
             {loading ? "Loading..." : isLogin ? (
               <><LogIn className="mr-2 w-4 h-4" /> Sign In</>

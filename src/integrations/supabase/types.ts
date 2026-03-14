@@ -54,6 +54,10 @@ export type Database = {
           category: string
           created_at: string
           description: string | null
+          discount_expires_at: string | null
+          discount_percent: number | null
+          enrolled_count: number
+          group_link: string | null
           id: string
           image_url: string | null
           instructor_name: string | null
@@ -61,6 +65,7 @@ export type Database = {
           is_published: boolean
           price_bdt: number
           price_usd: number
+          promo_code: string | null
           title: string
           total_classes: number
           total_exams: number
@@ -72,6 +77,10 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string | null
+          discount_expires_at?: string | null
+          discount_percent?: number | null
+          enrolled_count?: number
+          group_link?: string | null
           id?: string
           image_url?: string | null
           instructor_name?: string | null
@@ -79,6 +88,7 @@ export type Database = {
           is_published?: boolean
           price_bdt?: number
           price_usd?: number
+          promo_code?: string | null
           title: string
           total_classes?: number
           total_exams?: number
@@ -90,6 +100,10 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string | null
+          discount_expires_at?: string | null
+          discount_percent?: number | null
+          enrolled_count?: number
+          group_link?: string | null
           id?: string
           image_url?: string | null
           instructor_name?: string | null
@@ -97,6 +111,7 @@ export type Database = {
           is_published?: boolean
           price_bdt?: number
           price_usd?: number
+          promo_code?: string | null
           title?: string
           total_classes?: number
           total_exams?: number
@@ -245,6 +260,7 @@ export type Database = {
           phone: string
           status: string
           transaction_id: string | null
+          user_id: string | null
         }
         Insert: {
           amount?: number
@@ -259,6 +275,7 @@ export type Database = {
           phone: string
           status?: string
           transaction_id?: string | null
+          user_id?: string | null
         }
         Update: {
           amount?: number
@@ -273,6 +290,7 @@ export type Database = {
           phone?: string
           status?: string
           transaction_id?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -283,6 +301,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
