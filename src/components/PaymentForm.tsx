@@ -132,10 +132,10 @@ const PaymentForm = ({ course }: { course: Course }) => {
       <div className="space-y-2 mb-4">
         <div className="rounded-lg border border-bkash/30 bg-bkash/5 p-3">
           <p className="text-xs text-muted-foreground mb-1">bKash (Personal)</p>
-          <div className="flex items-center justify-between">
-            <span className="font-mono font-bold text-foreground text-sm">01633005730</span>
-            <button type="button" onClick={() => copyNumber("01633005730", "bkash")}
-              className="flex items-center gap-1 text-xs text-bkash hover:text-bkash/80 transition-colors">
+          <div className="flex items-center justify-between gap-3">
+            <span className="font-mono font-bold text-foreground text-sm break-all">{paymentNumbers.bkash}</span>
+            <button type="button" onClick={() => copyNumber(paymentNumbers.bkash, "bkash")}
+              className="flex items-center gap-1 text-xs text-bkash hover:text-bkash/80 transition-colors flex-shrink-0">
               {copied === "bkash" ? <CheckCircle className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
               {copied === "bkash" ? "Copied!" : "Copy"}
             </button>
@@ -143,10 +143,10 @@ const PaymentForm = ({ course }: { course: Course }) => {
         </div>
         <div className="rounded-lg border border-nagad/30 bg-nagad/5 p-3">
           <p className="text-xs text-muted-foreground mb-1">Nagad (Personal)</p>
-          <div className="flex items-center justify-between">
-            <span className="font-mono font-bold text-foreground text-sm">01711950646</span>
-            <button type="button" onClick={() => copyNumber("01711950646", "nagad")}
-              className="flex items-center gap-1 text-xs text-nagad hover:text-nagad/80 transition-colors">
+          <div className="flex items-center justify-between gap-3">
+            <span className="font-mono font-bold text-foreground text-sm break-all">{paymentNumbers.nagad}</span>
+            <button type="button" onClick={() => copyNumber(paymentNumbers.nagad, "nagad")}
+              className="flex items-center gap-1 text-xs text-nagad hover:text-nagad/80 transition-colors flex-shrink-0">
               {copied === "nagad" ? <CheckCircle className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
               {copied === "nagad" ? "Copied!" : "Copy"}
             </button>
