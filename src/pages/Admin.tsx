@@ -604,6 +604,7 @@ const Admin = () => {
               { key: "orders", icon: Users, label: "Orders", badge: pendingOrders },
               { key: "enrollments", icon: UserPlus, label: "Enrollments" },
               { key: "users", icon: Users, label: "Users" },
+              { key: "settings", icon: Settings2, label: "Website" },
             ].map((tab) => (
               <button
                 key={tab.key}
