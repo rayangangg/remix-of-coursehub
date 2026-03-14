@@ -22,6 +22,15 @@ const PaymentForm = ({ course }: { course: Course }) => {
   const [promoInput, setPromoInput] = useState("");
   const [promoApplied, setPromoApplied] = useState(false);
   const { toast } = useToast();
+  const { data: siteSettings } = useSiteSettings();
+
+  const paymentNumbers = useMemo(
+    () => ({
+      bkash: siteSettings?.payment_bkash?.trim() || "01633005730",
+      nagad: siteSettings?.payment_nagad?.trim() || "01711950646",
+    }),
+    [siteSettings],
+  );
 
   const [form, setForm] = useState({
     fullName: "", email: "", phone: "", transactionId: "",
