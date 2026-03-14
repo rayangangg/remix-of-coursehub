@@ -32,7 +32,7 @@ const Admin = () => {
 
   const [courseForm, setCourseForm] = useState({
     title: "", description: "", image_url: "", video_url: "",
-    price_bdt: "", price_usd: "", is_published: false,
+    price_bdt: "", is_published: false,
     instructor_name: "", instructor_title: "",
     total_classes: "", total_exams: "", total_materials: "",
     category: "Main", promo_code: "", discount_percent: "",
@@ -108,7 +108,7 @@ const Admin = () => {
         image_url: courseForm.image_url || null,
         video_url: courseForm.video_url || null,
         price_bdt: Number(courseForm.price_bdt) || 0,
-        price_usd: Number(courseForm.price_usd) || 0,
+        price_usd: 0,
         is_published: courseForm.is_published,
         instructor_name: courseForm.instructor_name || null,
         instructor_title: courseForm.instructor_title || null,
@@ -245,7 +245,7 @@ const Admin = () => {
   const resetForm = () => {
     setCourseForm({
       title: "", description: "", image_url: "", video_url: "",
-      price_bdt: "", price_usd: "", is_published: false,
+      price_bdt: "", is_published: false,
       instructor_name: "", instructor_title: "",
       total_classes: "", total_exams: "", total_materials: "",
       category: "Main", promo_code: "", discount_percent: "",
@@ -262,7 +262,6 @@ const Admin = () => {
       image_url: course.image_url || "",
       video_url: course.video_url || "",
       price_bdt: String(course.price_bdt),
-      price_usd: String(course.price_usd),
       is_published: course.is_published,
       instructor_name: course.instructor_name || "",
       instructor_title: course.instructor_title || "",
@@ -644,15 +643,10 @@ const Admin = () => {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div className="space-y-2">
                         <Label className="text-foreground/80">Price BDT ৳</Label>
                         <Input type="number" value={courseForm.price_bdt} onChange={(e) => setCourseForm({ ...courseForm, price_bdt: e.target.value })}
-                          className="bg-secondary/50 border-border/50" required />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-foreground/80">Price USD $</Label>
-                        <Input type="number" value={courseForm.price_usd} onChange={(e) => setCourseForm({ ...courseForm, price_usd: e.target.value })}
                           className="bg-secondary/50 border-border/50" required />
                       </div>
                       <div className="space-y-2">
@@ -727,7 +721,7 @@ const Admin = () => {
                             <span className="text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded">{course.category}</span>
                           </div>
                           <p className="text-sm text-muted-foreground">
-                            ৳{course.price_bdt} / ${course.price_usd}
+                            ৳{course.price_bdt}
                             {course.discount_percent > 0 && (
                               <span className="text-primary ml-2">-{course.discount_percent}%</span>
                             )}

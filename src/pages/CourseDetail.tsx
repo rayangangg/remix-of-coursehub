@@ -240,8 +240,7 @@ const CourseDetail = () => {
                 {!showPayment ? (
                   <div className="glass-card p-6 space-y-4">
                     <div className="text-center">
-                      <p className="text-3xl font-display font-bold text-primary">BDT {course.price_bdt}</p>
-                      <p className="text-sm text-muted-foreground mt-1">${course.price_usd} USD</p>
+                      <p className="text-3xl font-display font-bold text-primary">৳{course.price_bdt}</p>
                     </div>
                     <Button
                       onClick={() => setShowPayment(true)}
