@@ -9,9 +9,14 @@ export type SiteSettings = {
   hero_title: string;
   hero_highlight: string;
   hero_description: string;
+  hero_image_url: string | null;
   primary_hue: number;
   primary_saturation: number;
   primary_lightness: number;
+  stat_students: string;
+  stat_lessons: string;
+  stat_instructors: string;
+  stat_materials: string;
 };
 
 export const defaultSiteSettings: SiteSettings = {
@@ -22,9 +27,14 @@ export const defaultSiteSettings: SiteSettings = {
   hero_title: "Master New Skills with",
   hero_highlight: "Premium Online Courses",
   hero_description: "Join thousands of students learning from expert instructors. Pay with bKash and Nagad.",
+  hero_image_url: null,
   primary_hue: 28,
   primary_saturation: 95,
   primary_lightness: 50,
+  stat_students: "10k+",
+  stat_lessons: "500+",
+  stat_instructors: "50+",
+  stat_materials: "1k+",
 };
 
 export const useSiteSettings = () => {
@@ -33,7 +43,7 @@ export const useSiteSettings = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("site_settings")
-        .select("is_default,payment_bkash,payment_nagad,hero_badge,hero_title,hero_highlight,hero_description,primary_hue,primary_saturation,primary_lightness")
+        .select("*")
         .eq("is_default", true)
         .maybeSingle();
 

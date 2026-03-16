@@ -25,19 +25,26 @@ const Index = () => {
   const { data: siteSettings } = useSiteSettings();
 
   const stats = [
-    { icon: Users, value: "10k+", label: "Students" },
-    { icon: PlayCircle, value: "500+", label: "Lessons" },
-    { icon: GraduationCap, value: "50+", label: "Instructors" },
-    { icon: FileText, value: "1k+", label: "Materials" },
+    { icon: Users, value: siteSettings?.stat_students || "10k+", label: "Students" },
+    { icon: PlayCircle, value: siteSettings?.stat_lessons || "500+", label: "Lessons" },
+    { icon: GraduationCap, value: siteSettings?.stat_instructors || "50+", label: "Instructors" },
+    { icon: FileText, value: siteSettings?.stat_materials || "1k+", label: "Materials" },
   ];
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* Hero Section - EdgeCourse style */}
+      {/* Hero Section */}
       <section className="relative pt-16 overflow-hidden">
-        <div className="bg-gradient-green min-h-[500px] flex items-center">
+        <div
+          className="bg-gradient-green min-h-[500px] flex items-center"
+          style={siteSettings?.hero_image_url ? {
+            backgroundImage: `linear-gradient(to bottom, hsl(var(--background) / 0.7), hsl(var(--background) / 0.85)), url(${siteSettings.hero_image_url})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          } : undefined}
+        >
           <div className="container mx-auto px-4 py-16 md:py-24">
             <div className="max-w-3xl mx-auto text-center space-y-6">
               <div className="inline-block bg-primary/20 border border-primary/40 rounded-lg px-4 py-2 mb-4">

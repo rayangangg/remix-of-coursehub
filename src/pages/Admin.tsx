@@ -11,28 +11,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { defaultSiteSettings } from "@/hooks/useSiteSettings";
 import {
-  Plus,
-  Trash2,
-  Edit,
-  CheckCircle,
-  XCircle,
-  Clock,
-  Eye,
-  EyeOff,
-  Package,
-  Users,
-  Loader2,
-  Layers,
-  Video,
-  UserPlus,
-  Search,
-  BarChart3,
-  ArrowLeft,
-  Link as LinkIcon,
-  RefreshCw,
-  Settings2,
-  Palette,
-  Smartphone,
+  Plus, Trash2, Edit, CheckCircle, XCircle, Clock, Eye, EyeOff,
+  Package, Users, Loader2, Layers, Video, UserPlus, Search,
+  BarChart3, ArrowLeft, Link as LinkIcon, RefreshCw, Settings2,
+  Palette, Smartphone, Image, FileText,
 } from "lucide-react";
 
 const Admin = () => {
@@ -46,7 +28,7 @@ const Admin = () => {
   const [showForm, setShowForm] = useState(false);
   const [managingSections, setManagingSections] = useState<string | null>(null);
   const [sectionForm, setSectionForm] = useState({ title: "", section_type: "content" });
-  const [lessonForm, setLessonForm] = useState({ title: "", video_url: "", is_free: false });
+  const [lessonForm, setLessonForm] = useState({ title: "", video_url: "", material_url: "", is_free: false });
   const [addingLessonToSection, setAddingLessonToSection] = useState<string | null>(null);
   const [orderFilter, setOrderFilter] = useState<"all" | "pending" | "verified" | "rejected">("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -57,9 +39,14 @@ const Admin = () => {
     hero_title: defaultSiteSettings.hero_title,
     hero_highlight: defaultSiteSettings.hero_highlight,
     hero_description: defaultSiteSettings.hero_description,
+    hero_image_url: "",
     primary_hue: String(defaultSiteSettings.primary_hue),
     primary_saturation: String(defaultSiteSettings.primary_saturation),
     primary_lightness: String(defaultSiteSettings.primary_lightness),
+    stat_students: defaultSiteSettings.stat_students,
+    stat_lessons: defaultSiteSettings.stat_lessons,
+    stat_instructors: defaultSiteSettings.stat_instructors,
+    stat_materials: defaultSiteSettings.stat_materials,
   });
 
   const [courseForm, setCourseForm] = useState({
@@ -140,9 +127,7 @@ const Admin = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("site_settings")
-        .select(
-          "is_default,payment_bkash,payment_nagad,hero_badge,hero_title,hero_highlight,hero_description,primary_hue,primary_saturation,primary_lightness",
-        )
+        .select("*")
         .eq("is_default", true)
         .maybeSingle();
 
@@ -154,7 +139,6 @@ const Admin = () => {
 
   useEffect(() => {
     if (!siteSettings) return;
-
     setSiteSettingsForm({
       payment_bkash: siteSettings.payment_bkash,
       payment_nagad: siteSettings.payment_nagad,
@@ -162,9 +146,14 @@ const Admin = () => {
       hero_title: siteSettings.hero_title,
       hero_highlight: siteSettings.hero_highlight,
       hero_description: siteSettings.hero_description,
+      hero_image_url: siteSettings.hero_image_url || "",
       primary_hue: String(siteSettings.primary_hue),
       primary_saturation: String(siteSettings.primary_saturation),
       primary_lightness: String(siteSettings.primary_lightness),
+      stat_students: siteSettings.stat_students,
+      stat_lessons: siteSettings.stat_lessons,
+      stat_instructors: siteSettings.stat_instructors,
+      stat_materials: siteSettings.stat_materials,
     });
   }, [siteSettings]);
 
@@ -272,14 +261,15 @@ const Admin = () => {
         course_id: managingSections!,
         title: lessonForm.title,
         video_url: lessonForm.video_url || null,
+        material_url: lessonForm.material_url || null,
         is_free: lessonForm.is_free,
         sort_order: sectionLessons.length + 1,
-      });
+      } as any);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-sections"] });
-      setLessonForm({ title: "", video_url: "", is_free: false });
+      setLessonForm({ title: "", video_url: "", material_url: "", is_free: false });
       setAddingLessonToSection(null);
       toast({ title: "Lesson added!" });
     },
@@ -332,17 +322,24 @@ const Admin = () => {
         hero_title: siteSettingsForm.hero_title.trim() || defaultSiteSettings.hero_title,
         hero_highlight: siteSettingsForm.hero_highlight.trim() || defaultSiteSettings.hero_highlight,
         hero_description: siteSettingsForm.hero_description.trim() || defaultSiteSettings.hero_description,
+        hero_image_url: siteSettingsForm.hero_image_url.trim() || null,
         primary_hue: hue,
         primary_saturation: saturation,
         primary_lightness: lightness,
+        stat_students: siteSettingsForm.stat_students.trim() || defaultSiteSettings.stat_students,
+        stat_lessons: siteSettingsForm.stat_lessons.trim() || defaultSiteSettings.stat_lessons,
+        stat_instructors: siteSettingsForm.stat_instructors.trim() || defaultSiteSettings.stat_instructors,
+        stat_materials: siteSettingsForm.stat_materials.trim() || defaultSiteSettings.stat_materials,
       };
 
-      const { error } = await supabase.from("site_settings").upsert(payload, { onConflict: "is_default" });
+      const { error } = await supabase.from("site_settings").upsert(payload as any, { onConflict: "is_default" });
       if (error) throw error;
     },
     onSuccess: () => {
+      // Invalidate and immediately refetch so SiteThemeSync picks up new colors
       queryClient.invalidateQueries({ queryKey: ["site-settings"] });
-      toast({ title: "Website settings updated" });
+      queryClient.refetchQueries({ queryKey: ["site-settings"] });
+      toast({ title: "Website settings updated — changes are live!" });
     },
     onError: (error: any) => {
       toast({ title: "Settings update failed", description: error.message, variant: "destructive" });
@@ -470,20 +467,20 @@ const Admin = () => {
               {sections?.map((section, sIdx) => (
                 <div key={section.id} className="glass-card overflow-hidden">
                   <div className="flex items-center justify-between p-4 bg-card">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
                       <span className="text-xs text-muted-foreground font-mono bg-secondary px-2 py-1 rounded">
                         {sIdx + 1}
                       </span>
-                      <Layers className="w-4 h-4 text-primary" />
-                      <span className="font-medium text-foreground text-sm">{section.title}</span>
-                      <span className="text-xs text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded">
+                      <Layers className="w-4 h-4 text-primary flex-shrink-0" />
+                      <span className="font-medium text-foreground text-sm truncate">{section.title}</span>
+                      <span className="text-xs text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded flex-shrink-0">
                         {section.section_type} · {((section.lessons as any[]) || []).length} lessons
                       </span>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-shrink-0">
                       <Button size="sm" variant="outline" onClick={() => {
                         setAddingLessonToSection(section.id);
-                        setLessonForm({ title: "", video_url: "", is_free: false });
+                        setLessonForm({ title: "", video_url: "", material_url: "", is_free: false });
                       }} className="border-primary/50 text-primary hover:bg-primary/10">
                         <Plus className="w-3 h-3 mr-1" /> Lesson
                       </Button>
@@ -509,7 +506,15 @@ const Admin = () => {
                         <Input
                           value={lessonForm.video_url}
                           onChange={(e) => setLessonForm({ ...lessonForm, video_url: e.target.value })}
-                          placeholder="YouTube URL (optional)"
+                          placeholder="YouTube or video URL (optional)"
+                          className="bg-secondary/50 border-border/50"
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 gap-3">
+                        <Input
+                          value={lessonForm.material_url}
+                          onChange={(e) => setLessonForm({ ...lessonForm, material_url: e.target.value })}
+                          placeholder="Material/PDF link (Google Drive, Dropbox, etc.)"
                           className="bg-secondary/50 border-border/50"
                         />
                       </div>
@@ -549,6 +554,9 @@ const Admin = () => {
                           )}
                           {lesson.video_url && (
                             <LinkIcon className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+                          )}
+                          {lesson.material_url && (
+                            <FileText className="w-3 h-3 text-primary flex-shrink-0" />
                           )}
                         </div>
                         <Button size="sm" variant="ghost"
@@ -877,7 +885,6 @@ const Admin = () => {
           {/* ===== ORDERS TAB ===== */}
           {activeTab === "orders" && (
             <div className="space-y-4 animate-fade-in">
-              {/* Filters */}
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -888,7 +895,7 @@ const Admin = () => {
                     className="pl-10 bg-secondary/50 border-border/50"
                   />
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   {(["all", "pending", "verified", "rejected"] as const).map((f) => (
                     <button
                       key={f}
@@ -905,7 +912,6 @@ const Admin = () => {
                 </div>
               </div>
 
-              {/* Orders List */}
               {ordersLoading ? (
                 <div className="space-y-3">{[1, 2, 3].map((i) => <div key={i} className="glass-card h-24 animate-pulse" />)}</div>
               ) : filteredOrders && filteredOrders.length > 0 ? (
@@ -1007,6 +1013,7 @@ const Admin = () => {
           {/* ===== WEBSITE SETTINGS TAB ===== */}
           {activeTab === "settings" && (
             <div className="space-y-6 animate-fade-in">
+              {/* Payment Numbers */}
               <div className="glass-card p-5">
                 <div className="flex items-center gap-2 mb-2">
                   <Smartphone className="w-4 h-4 text-primary" />
@@ -1037,21 +1044,20 @@ const Admin = () => {
                 </div>
               </div>
 
+              {/* Website Colors */}
               <div className="glass-card p-5">
                 <div className="flex items-center gap-2 mb-2">
                   <Palette className="w-4 h-4 text-primary" />
-                  <h3 className="font-display font-semibold text-foreground">Website Colors</h3>
+                  <h3 className="font-display font-semibold text-foreground">Website Colors (Instant Update)</h3>
                 </div>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Update the global theme accent color in HSL values.
+                  Changes apply instantly across the whole site — no reload needed.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label className="text-foreground/80">Hue (0-360)</Label>
                     <Input
-                      type="number"
-                      min={0}
-                      max={360}
+                      type="number" min={0} max={360}
                       value={siteSettingsForm.primary_hue}
                       onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, primary_hue: e.target.value })}
                       className="bg-secondary/50 border-border/50"
@@ -1060,9 +1066,7 @@ const Admin = () => {
                   <div className="space-y-2">
                     <Label className="text-foreground/80">Saturation (0-100)</Label>
                     <Input
-                      type="number"
-                      min={0}
-                      max={100}
+                      type="number" min={0} max={100}
                       value={siteSettingsForm.primary_saturation}
                       onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, primary_saturation: e.target.value })}
                       className="bg-secondary/50 border-border/50"
@@ -1071,17 +1075,100 @@ const Admin = () => {
                   <div className="space-y-2">
                     <Label className="text-foreground/80">Lightness (0-100)</Label>
                     <Input
-                      type="number"
-                      min={0}
-                      max={100}
+                      type="number" min={0} max={100}
                       value={siteSettingsForm.primary_lightness}
                       onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, primary_lightness: e.target.value })}
                       className="bg-secondary/50 border-border/50"
                     />
                   </div>
                 </div>
+                {/* Color preview */}
+                <div className="mt-4 flex items-center gap-3">
+                  <div
+                    className="w-12 h-12 rounded-lg border border-border/30"
+                    style={{ backgroundColor: `hsl(${siteSettingsForm.primary_hue}, ${siteSettingsForm.primary_saturation}%, ${siteSettingsForm.primary_lightness}%)` }}
+                  />
+                  <span className="text-sm text-muted-foreground">
+                    Preview: hsl({siteSettingsForm.primary_hue}, {siteSettingsForm.primary_saturation}%, {siteSettingsForm.primary_lightness}%)
+                  </span>
+                </div>
               </div>
 
+              {/* Homepage Stats */}
+              <div className="glass-card p-5">
+                <div className="flex items-center gap-2 mb-2">
+                  <BarChart3 className="w-4 h-4 text-primary" />
+                  <h3 className="font-display font-semibold text-foreground">Homepage Stats Bar</h3>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Edit the numbers shown in the stats section below the hero.
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-foreground/80">Students</Label>
+                    <Input
+                      value={siteSettingsForm.stat_students}
+                      onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, stat_students: e.target.value })}
+                      className="bg-secondary/50 border-border/50"
+                      placeholder="10k+"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-foreground/80">Lessons</Label>
+                    <Input
+                      value={siteSettingsForm.stat_lessons}
+                      onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, stat_lessons: e.target.value })}
+                      className="bg-secondary/50 border-border/50"
+                      placeholder="500+"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-foreground/80">Instructors</Label>
+                    <Input
+                      value={siteSettingsForm.stat_instructors}
+                      onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, stat_instructors: e.target.value })}
+                      className="bg-secondary/50 border-border/50"
+                      placeholder="50+"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-foreground/80">Materials</Label>
+                    <Input
+                      value={siteSettingsForm.stat_materials}
+                      onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, stat_materials: e.target.value })}
+                      className="bg-secondary/50 border-border/50"
+                      placeholder="1k+"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Hero Image */}
+              <div className="glass-card p-5">
+                <div className="flex items-center gap-2 mb-2">
+                  <Image className="w-4 h-4 text-primary" />
+                  <h3 className="font-display font-semibold text-foreground">Hero Background Image</h3>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Add a background image to the hero section. Leave empty for the default gradient.
+                </p>
+                <div className="space-y-2">
+                  <Label className="text-foreground/80">Image URL</Label>
+                  <Input
+                    value={siteSettingsForm.hero_image_url}
+                    onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, hero_image_url: e.target.value })}
+                    className="bg-secondary/50 border-border/50"
+                    placeholder="https://images.unsplash.com/..."
+                  />
+                </div>
+                {siteSettingsForm.hero_image_url && (
+                  <div className="mt-3 rounded-lg overflow-hidden border border-border/30 max-w-sm">
+                    <img src={siteSettingsForm.hero_image_url} alt="Hero preview" className="w-full h-32 object-cover" />
+                  </div>
+                )}
+              </div>
+
+              {/* Homepage Text */}
               <div className="glass-card p-5">
                 <h3 className="font-display font-semibold text-foreground mb-2">Homepage Text</h3>
                 <p className="text-sm text-muted-foreground mb-4">

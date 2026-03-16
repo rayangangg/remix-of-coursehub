@@ -4,7 +4,7 @@ import { useSiteSettings } from "@/hooks/useSiteSettings";
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 
 const SiteThemeSync = () => {
-  const { data: settings } = useSiteSettings();
+  const { data: settings, dataUpdatedAt } = useSiteSettings();
 
   useEffect(() => {
     if (!settings) return;
@@ -23,7 +23,7 @@ const SiteThemeSync = () => {
     root.style.setProperty("--primary-foreground", foreground);
     root.style.setProperty("--accent-foreground", foreground);
     root.style.setProperty("--sidebar-primary-foreground", foreground);
-  }, [settings]);
+  }, [settings, dataUpdatedAt]);
 
   return null;
 };

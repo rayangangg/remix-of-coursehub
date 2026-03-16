@@ -202,6 +202,7 @@ export type Database = {
           duration_minutes: number | null
           id: string
           is_free: boolean
+          material_url: string | null
           section_id: string
           sort_order: number
           title: string
@@ -213,6 +214,7 @@ export type Database = {
           duration_minutes?: number | null
           id?: string
           is_free?: boolean
+          material_url?: string | null
           section_id: string
           sort_order?: number
           title: string
@@ -224,6 +226,7 @@ export type Database = {
           duration_minutes?: number | null
           id?: string
           is_free?: boolean
+          material_url?: string | null
           section_id?: string
           sort_order?: number
           title?: string
@@ -332,6 +335,7 @@ export type Database = {
           hero_badge: string
           hero_description: string
           hero_highlight: string
+          hero_image_url: string | null
           hero_title: string
           id: string
           is_default: boolean
@@ -340,6 +344,10 @@ export type Database = {
           primary_hue: number
           primary_lightness: number
           primary_saturation: number
+          stat_instructors: string
+          stat_lessons: string
+          stat_materials: string
+          stat_students: string
           updated_at: string
         }
         Insert: {
@@ -347,6 +355,7 @@ export type Database = {
           hero_badge?: string
           hero_description?: string
           hero_highlight?: string
+          hero_image_url?: string | null
           hero_title?: string
           id?: string
           is_default?: boolean
@@ -355,6 +364,10 @@ export type Database = {
           primary_hue?: number
           primary_lightness?: number
           primary_saturation?: number
+          stat_instructors?: string
+          stat_lessons?: string
+          stat_materials?: string
+          stat_students?: string
           updated_at?: string
         }
         Update: {
@@ -362,6 +375,7 @@ export type Database = {
           hero_badge?: string
           hero_description?: string
           hero_highlight?: string
+          hero_image_url?: string | null
           hero_title?: string
           id?: string
           is_default?: boolean
@@ -370,6 +384,10 @@ export type Database = {
           primary_hue?: number
           primary_lightness?: number
           primary_saturation?: number
+          stat_instructors?: string
+          stat_lessons?: string
+          stat_materials?: string
+          stat_students?: string
           updated_at?: string
         }
         Relationships: []
