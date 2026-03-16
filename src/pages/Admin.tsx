@@ -553,10 +553,10 @@ const Admin = () => {
                             <span className="text-xs text-success bg-success/10 px-2 py-0.5 rounded flex-shrink-0">Free</span>
                           )}
                           {lesson.video_url && (
-                            <LinkIcon className="w-3 h-3 text-muted-foreground flex-shrink-0" title="Has video" />
+                            <LinkIcon className="w-3 h-3 text-muted-foreground flex-shrink-0" />
                           )}
                           {lesson.material_url && (
-                            <FileText className="w-3 h-3 text-primary flex-shrink-0" title="Has material" />
+                            <FileText className="w-3 h-3 text-primary flex-shrink-0" />
                           )}
                         </div>
                         <Button size="sm" variant="ghost"
