@@ -1,73 +1,84 @@
-# Welcome to your Lovable project
+# CourseHUB
 
-## Project info
+Make a e-commerce store where i will sell courses and people can only buy from here and also make admin penel where i can manage everything and dont visible this admin penel to users only visible for oyeehgalib@gmail.com make him owner/admin 
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+And for payment system 
 
-## How can I edit this code?
+Add both options and show both currency for course price in bdt and in usd 
 
-There are several ways of editing your application.
+If someone want to buy with bkash or nagad
 
-**Use Lovable**
+ payment that option is for them
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
 
-Changes made via Lovable will be committed automatically to this repo.
 
-**Use your preferred IDE**
+Role: You are an expert Full-Stack Web Developer specialized in high-conversion UI/UX for online courses.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Task: Create a responsive, premium "Payment & Enrollment" component using HTML and Tailwind CSS.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+Design Theme: > * Dark mode aesthetic (Background: #0d0221 or similar deep navy/black).
 
-Follow these steps:
+Primary Accent: Vibrant Violet/Purple.
+
+Style: Glassmorphism, smooth rounded corners (2xl or 3xl), and subtle glow effects.
+
+Functionality Requirements:
+
+Tab Switcher: Create a toggle to switch between "Local (bKash/Nagad)" and "International (Card)".
+
+Local Payment (Manual Flow):
+
+Display two payment boxes:
+
+bKash (Personal): 01633005730 (Violet theme)
+
+Nagad (Personal): 01711950646 (Orange/Red theme)
+
+Include a "Click to Copy" button next to each number.
+
+Below the numbers, include a form with: Full Name, Email, Phone Number, and Transaction ID (TrxID).
+
+Button Text: "Verify & Enroll Now".
+
+International Payment (Manual Link Flow):
+
+Form fields: Full Name, Email, Phone Number, and Country.
+
+Button Text: "Confirm Order & Get Link".
+
+Crucial Logic: Upon clicking "Confirm," hide the form and show a beautiful success message: "Thank you! We are preparing your secure payment link. Please wait a few minutes and check your email inbox (and spam folder) shortly to complete your enrollment."
+
+The "Lovable" Factor:
+
+Add smooth CSS transitions when switching tabs.
+
+Use icons (FontAwesome or Lucide) for copy buttons and input fields.
+
+Ensure the layout is mobile-first, as most students buy from their phones.
+
+Output: Provide the complete code in a single file including necessary script for the tab switching and the "success message" toggle
+
+And i need to sellect course price in different for international buyer and for Bangladeshi buyer
+
+This project was built with [Lovable](https://lovable.dev).
+
+**Live app**: https://coursehub-webapp.lovable.app
+
+## Build with Lovable
+
+Continue developing this project in the [Lovable editor](https://lovable.dev/projects/b2c9d07e-4e31-4548-8db0-798695ba9614).
+
+- **Ship faster**: describe what you want to build and Lovable handles the code.
+- **Stay in sync**: every change made in Lovable is committed straight to this repository.
+- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+
+## Development
+
+Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
+git clone <this-repository-url>
+cd <repository-name>
 npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
 npm run dev
 ```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
