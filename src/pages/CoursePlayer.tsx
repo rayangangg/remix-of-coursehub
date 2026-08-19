@@ -15,7 +15,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { getEmbeddableVideoUrl, isDirectPlayableVideoUrl } from "@/lib/video";
+import { resolveVideo } from "@/lib/video";
+import { openMaterial } from "@/lib/materials";
 
 const CoursePlayer = () => {
   const { id } = useParams<{ id: string }>();
@@ -92,7 +93,7 @@ const CoursePlayer = () => {
   const progressPercent = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
 
   const activeLesson = allLessons.find((l) => l.id === activeLessonId) || allLessons[0];
-  const activeLessonVideoUrl = getEmbeddableVideoUrl(activeLesson?.video_url);
+  const activeVideo = resolveVideo(activeLesson?.video_url);
 
   useEffect(() => {
     if (sections && sections.length > 0) {
