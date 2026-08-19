@@ -925,7 +925,7 @@ const Admin = () => {
                     <div key={course.id} className="glass-card p-4 flex items-center justify-between gap-4 course-card-hover">
                       <div className="flex items-center gap-4 min-w-0 flex-1">
                         {course.image_url && (
-                          <img src={course.image_url} alt="" className="w-16 h-12 rounded-lg object-cover flex-shrink-0" />
+                          <img referrerPolicy="no-referrer" src={course.image_url} alt="" className="w-16 h-12 rounded-lg object-cover flex-shrink-0" />
                         )}
                         <div className="min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
@@ -1255,7 +1255,7 @@ const Admin = () => {
                 </div>
                 {siteSettingsForm.hero_image_url && (
                   <div className="mt-3 rounded-lg overflow-hidden border border-border/30 max-w-sm">
-                    <img src={siteSettingsForm.hero_image_url} alt="Hero preview" className="w-full h-32 object-cover" />
+                    <img referrerPolicy="no-referrer" src={siteSettingsForm.hero_image_url} alt="Hero preview" className="w-full h-32 object-cover" />
                   </div>
                 )}
               </div>

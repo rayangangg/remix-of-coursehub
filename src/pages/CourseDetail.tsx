@@ -209,7 +209,7 @@ const CourseDetail = () => {
                 </div>
               ) : course.image_url ? (
                 <div className="rounded-xl overflow-hidden border border-border/30">
-                  <img src={course.image_url} alt={course.title} className="w-full h-64 md:h-80 object-cover" loading="lazy" />
+                  <img referrerPolicy="no-referrer" src={course.image_url} alt={course.title} className="w-full h-64 md:h-80 object-cover" loading="lazy" />
                 </div>
               ) : null}
 
