@@ -415,6 +415,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      course_materials_storage_usage: { Args: never; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
