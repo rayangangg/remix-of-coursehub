@@ -474,6 +474,21 @@ const Admin = () => {
               </div>
             </div>
 
+            <div className="glass-card p-4 mb-6">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-medium text-foreground">Storage used</p>
+                <p className="text-sm text-muted-foreground">
+                  {formatBytes(storageUsed)} of {formatBytes(STORAGE_QUOTA_BYTES)} ({storagePercent}%)
+                </p>
+              </div>
+              <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
+                <div className="h-full bg-primary transition-all" style={{ width: `${storagePercent}%` }} />
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                {formatBytes(Math.max(0, STORAGE_QUOTA_BYTES - storageUsed))} remaining for class slides.
+              </p>
+            </div>
+
             {/* Add Section */}
             <div className="glass-card p-4 mb-6">
               <h3 className="font-display font-semibold text-foreground text-sm mb-3">Add Section</h3>
@@ -713,6 +728,18 @@ const Admin = () => {
                 <div className="glass-card p-5">
                   <p className="text-xs text-muted-foreground mb-1">Total Enrollments</p>
                   <p className="text-2xl font-display font-bold text-foreground">{totalEnrollments}</p>
+                </div>
+              </div>
+
+              <div className="glass-card p-5">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs text-muted-foreground">Class materials storage (5 GB quota)</p>
+                  <p className="text-xs text-muted-foreground">
+                    {formatBytes(storageUsed)} / {formatBytes(STORAGE_QUOTA_BYTES)} · {storagePercent}%
+                  </p>
+                </div>
+                <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
+                  <div className="h-full bg-primary transition-all" style={{ width: `${storagePercent}%` }} />
                 </div>
               </div>
 
