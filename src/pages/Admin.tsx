@@ -11,6 +11,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { defaultSiteSettings } from "@/hooks/useSiteSettings";
 import {
+  uploadMaterial,
+  getStorageUsage,
+  formatBytes,
+  isStoredMaterial,
+  STORAGE_QUOTA_BYTES,
+} from "@/lib/materials";
+import {
   Plus, Trash2, Edit, CheckCircle, XCircle, Clock, Eye, EyeOff,
   Package, Users, Loader2, Layers, Video, UserPlus, Search,
   BarChart3, ArrowLeft, Link as LinkIcon, RefreshCw, Settings2,
@@ -30,6 +37,7 @@ const Admin = () => {
   const [sectionForm, setSectionForm] = useState({ title: "", section_type: "content" });
   const [lessonForm, setLessonForm] = useState({ title: "", video_url: "", material_url: "", is_free: false });
   const [addingLessonToSection, setAddingLessonToSection] = useState<string | null>(null);
+  const [uploadingMaterial, setUploadingMaterial] = useState(false);
   const [orderFilter, setOrderFilter] = useState<"all" | "pending" | "verified" | "rejected">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [siteSettingsForm, setSiteSettingsForm] = useState({
@@ -120,6 +128,12 @@ const Admin = () => {
       return data;
     },
     enabled: shouldLoadProfiles,
+  });
+
+  const { data: storageUsed = 0 } = useQuery({
+    queryKey: ["storage-usage"],
+    queryFn: getStorageUsage,
+    enabled: isAdmin,
   });
 
   const { data: siteSettings, isLoading: siteSettingsLoading } = useQuery({
@@ -347,6 +361,31 @@ const Admin = () => {
   });
 
   // ===== HELPERS =====
+  const storagePercent = Math.min(100, Math.round((storageUsed / STORAGE_QUOTA_BYTES) * 100));
+
+  const handleMaterialUpload = async (file: File) => {
+    if (!managingSections) return;
+    if (storageUsed + file.size > STORAGE_QUOTA_BYTES) {
+      toast({
+        title: "Storage full",
+        description: `Only ${formatBytes(STORAGE_QUOTA_BYTES - storageUsed)} left of your 5 GB quota.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    setUploadingMaterial(true);
+    try {
+      const path = await uploadMaterial(managingSections, file);
+      setLessonForm((prev) => ({ ...prev, material_url: path }));
+      queryClient.invalidateQueries({ queryKey: ["storage-usage"] });
+      toast({ title: "Slides uploaded!" });
+    } catch (e: any) {
+      toast({ title: "Upload failed", description: e.message, variant: "destructive" });
+    } finally {
+      setUploadingMaterial(false);
+    }
+  };
+
   const resetForm = () => {
     setCourseForm({
       title: "", description: "", image_url: "", video_url: "",
@@ -435,6 +474,21 @@ const Admin = () => {
               </div>
             </div>
 
+            <div className="glass-card p-4 mb-6">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-medium text-foreground">Storage used</p>
+                <p className="text-sm text-muted-foreground">
+                  {formatBytes(storageUsed)} of {formatBytes(STORAGE_QUOTA_BYTES)} ({storagePercent}%)
+                </p>
+              </div>
+              <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
+                <div className="h-full bg-primary transition-all" style={{ width: `${storagePercent}%` }} />
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                {formatBytes(Math.max(0, STORAGE_QUOTA_BYTES - storageUsed))} remaining for class slides.
+              </p>
+            </div>
+
             {/* Add Section */}
             <div className="glass-card p-4 mb-6">
               <h3 className="font-display font-semibold text-foreground text-sm mb-3">Add Section</h3>
@@ -514,9 +568,35 @@ const Admin = () => {
                         <Input
                           value={lessonForm.material_url}
                           onChange={(e) => setLessonForm({ ...lessonForm, material_url: e.target.value })}
-                          placeholder="Material/PDF link (Google Drive, Dropbox, etc.)"
+                          placeholder="Paste Google Drive / Dropbox link for slides (optional)"
                           className="bg-secondary/50 border-border/50"
                         />
+                        <div className="flex flex-wrap items-center gap-3">
+                          <label className="inline-flex items-center gap-2 text-sm text-primary cursor-pointer border border-primary/40 rounded-lg px-3 py-2 hover:bg-primary/10">
+                            {uploadingMaterial ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <FileText className="w-4 h-4" />
+                            )}
+                            Upload class slides
+                            <input
+                              type="file"
+                              className="hidden"
+                              disabled={uploadingMaterial}
+                              accept=".pdf,.ppt,.pptx,.doc,.docx,.zip,.png,.jpg,.jpeg"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                e.target.value = "";
+                                if (file) handleMaterialUpload(file);
+                              }}
+                            />
+                          </label>
+                          {isStoredMaterial(lessonForm.material_url) && (
+                            <span className="text-xs text-success truncate max-w-[240px]">
+                              Uploaded: {lessonForm.material_url.split("/").pop()}
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <div className="flex items-center gap-4">
                         <label className="flex items-center gap-2 text-sm text-foreground/80">
@@ -648,6 +728,18 @@ const Admin = () => {
                 <div className="glass-card p-5">
                   <p className="text-xs text-muted-foreground mb-1">Total Enrollments</p>
                   <p className="text-2xl font-display font-bold text-foreground">{totalEnrollments}</p>
+                </div>
+              </div>
+
+              <div className="glass-card p-5">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs text-muted-foreground">Class materials storage (5 GB quota)</p>
+                  <p className="text-xs text-muted-foreground">
+                    {formatBytes(storageUsed)} / {formatBytes(STORAGE_QUOTA_BYTES)} · {storagePercent}%
+                  </p>
+                </div>
+                <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
+                  <div className="h-full bg-primary transition-all" style={{ width: `${storagePercent}%` }} />
                 </div>
               </div>
 
@@ -833,7 +925,7 @@ const Admin = () => {
                     <div key={course.id} className="glass-card p-4 flex items-center justify-between gap-4 course-card-hover">
                       <div className="flex items-center gap-4 min-w-0 flex-1">
                         {course.image_url && (
-                          <img src={course.image_url} alt="" className="w-16 h-12 rounded-lg object-cover flex-shrink-0" />
+                          <img referrerPolicy="no-referrer" src={course.image_url} alt="" className="w-16 h-12 rounded-lg object-cover flex-shrink-0" />
                         )}
                         <div className="min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
@@ -1163,7 +1255,7 @@ const Admin = () => {
                 </div>
                 {siteSettingsForm.hero_image_url && (
                   <div className="mt-3 rounded-lg overflow-hidden border border-border/30 max-w-sm">
-                    <img src={siteSettingsForm.hero_image_url} alt="Hero preview" className="w-full h-32 object-cover" />
+                    <img referrerPolicy="no-referrer" src={siteSettingsForm.hero_image_url} alt="Hero preview" className="w-full h-32 object-cover" />
                   </div>
                 )}
               </div>

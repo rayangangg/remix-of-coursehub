@@ -129,7 +129,7 @@ const Dashboard = () => {
                   <div key={course.id} className="glass-card overflow-hidden course-card-hover">
                     <div className="h-44 bg-secondary/50 overflow-hidden">
                       {course.image_url ? (
-                        <img
+                        <img referrerPolicy="no-referrer"
                           src={course.image_url}
                           alt={course.title}
                           className="w-full h-full object-cover"

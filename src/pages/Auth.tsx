@@ -64,7 +64,7 @@ const Auth = () => {
           {isLogin ? "Welcome Back" : "Create Account"}
         </h1>
         <p className="text-muted-foreground text-center text-sm mb-8">
-          {isLogin ? "Sign in to access your courses" : "Join CourseHUB today"}
+          {isLogin ? "Sign in to access your courses" : "Join Premium Course today"}
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-5">

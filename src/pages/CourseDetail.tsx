@@ -17,7 +17,7 @@ import {
   Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getEmbeddableVideoUrl, isDirectPlayableVideoUrl } from "@/lib/video";
+import { resolveVideo, getEmbeddableVideoUrl } from "@/lib/video";
 
 type LessonItem = {
   id: string;
@@ -106,8 +106,9 @@ const CourseDetail = () => {
   }, [freePreviewLessons, activePreviewLessonId]);
 
   const activeFreePreviewLesson = freePreviewLessons.find((lesson) => lesson.id === activePreviewLessonId) ?? null;
-  const activePreviewUrl =
-    getEmbeddableVideoUrl(activeFreePreviewLesson?.video_url) || getEmbeddableVideoUrl(course?.video_url);
+  const activePreview =
+    resolveVideo(activeFreePreviewLesson?.video_url) || resolveVideo(course?.video_url);
+  const activePreviewUrl = activePreview?.url ?? null;
 
   if (isLoading) {
     return (
@@ -181,7 +182,7 @@ const CourseDetail = () => {
               {activePreviewUrl ? (
                 <div className="space-y-3">
                   <div className="aspect-video rounded-xl overflow-hidden border border-border/30 bg-secondary/50">
-                    {isDirectPlayableVideoUrl(activePreviewUrl) ? (
+                    {activePreview?.kind === "file" ? (
                       <video
                         src={activePreviewUrl}
                         className="w-full h-full"
@@ -191,8 +192,9 @@ const CourseDetail = () => {
                       />
                     ) : (
                       <iframe
-                        src={activePreviewUrl}
+                        src={activePreviewUrl ?? undefined}
                         className="w-full h-full"
+                        referrerPolicy="origin"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                         allowFullScreen
                         title={activeFreePreviewLesson?.title || course.title}
@@ -207,7 +209,7 @@ const CourseDetail = () => {
                 </div>
               ) : course.image_url ? (
                 <div className="rounded-xl overflow-hidden border border-border/30">
-                  <img src={course.image_url} alt={course.title} className="w-full h-64 md:h-80 object-cover" loading="lazy" />
+                  <img referrerPolicy="no-referrer" src={course.image_url} alt={course.title} className="w-full h-64 md:h-80 object-cover" loading="lazy" />
                 </div>
               ) : null}
 

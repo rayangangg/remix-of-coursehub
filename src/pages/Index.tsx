@@ -49,7 +49,7 @@ const Index = () => {
             <div className="max-w-3xl mx-auto text-center space-y-6">
               <div className="inline-block bg-primary/20 border border-primary/40 rounded-lg px-4 py-2 mb-4">
                 <span className="text-primary font-display font-semibold text-lg">
-                  {siteSettings?.hero_badge || "Welcome to CourseHUB"}
+                  {siteSettings?.hero_badge || "Welcome to Premium Course"}
                 </span>
               </div>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-foreground leading-tight">

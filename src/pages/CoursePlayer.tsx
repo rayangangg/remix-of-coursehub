@@ -12,10 +12,12 @@ import {
   ArrowLeft,
   Loader2,
   Video,
+  FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { getEmbeddableVideoUrl, isDirectPlayableVideoUrl } from "@/lib/video";
+import { resolveVideo } from "@/lib/video";
+import { openMaterial } from "@/lib/materials";
 
 const CoursePlayer = () => {
   const { id } = useParams<{ id: string }>();
@@ -92,7 +94,7 @@ const CoursePlayer = () => {
   const progressPercent = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
 
   const activeLesson = allLessons.find((l) => l.id === activeLessonId) || allLessons[0];
-  const activeLessonVideoUrl = getEmbeddableVideoUrl(activeLesson?.video_url);
+  const activeVideo = resolveVideo(activeLesson?.video_url);
 
   useEffect(() => {
     if (sections && sections.length > 0) {
@@ -158,23 +160,25 @@ const CoursePlayer = () => {
         <div className="flex flex-col lg:flex-row min-h-[calc(100vh-8rem)]">
           <div className="flex-1 flex flex-col">
             <div className="bg-black">
-              {activeLessonVideoUrl ? (
+              {activeVideo ? (
                 <div className="aspect-video max-h-[60vh] mx-auto">
-                  {isDirectPlayableVideoUrl(activeLessonVideoUrl) ? (
+                  {activeVideo.kind === "file" ? (
                     <video
-                      src={activeLessonVideoUrl}
+                      src={activeVideo.url}
                       className="w-full h-full"
                       controls
                       playsInline
+                      crossOrigin="anonymous"
                       preload="metadata"
                     />
                   ) : (
                     <iframe
-                      src={activeLessonVideoUrl}
+                      src={activeVideo.url}
                       className="w-full h-full"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      referrerPolicy="origin"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                       allowFullScreen
-                      title={activeLesson.title}
+                      title={activeLesson?.title || "Lesson video"}
                     />
                   )}
                 </div>
@@ -182,7 +186,7 @@ const CoursePlayer = () => {
                 <div className="aspect-video max-h-[60vh] mx-auto flex items-center justify-center bg-secondary">
                   <div className="text-center text-muted-foreground">
                     <PlayCircle className="w-16 h-16 mx-auto mb-3 opacity-30" />
-                    <p className="text-sm">No playable video found for this lesson</p>
+                    <p className="text-sm">No video added for this lesson yet</p>
                   </div>
                 </div>
               )}
@@ -193,6 +197,17 @@ const CoursePlayer = () => {
               <h2 className="font-display font-semibold text-foreground text-lg mb-3">
                 {activeLesson?.title || "Select a lesson"}
               </h2>
+              {activeLesson?.material_url && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="mr-2 border-primary/50 text-primary hover:bg-primary/10"
+                  onClick={() => openMaterial(activeLesson.material_url)}
+                >
+                  <FileText className="w-4 h-4 mr-2" />
+                  Class Slides / Materials
+                </Button>
+              )}
               {activeLesson && !completedLessonIds.has(activeLesson.id) && (
                 <Button
                   size="sm"

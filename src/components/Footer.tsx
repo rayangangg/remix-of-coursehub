@@ -10,7 +10,7 @@ const Footer = () => {
             <Link to="/" className="flex items-center gap-2 mb-4">
               <BookOpen className="w-6 h-6 text-primary" />
               <span className="font-display font-bold text-xl text-primary">
-                Course<span className="text-foreground">HUB</span>
+                Premium<span className="text-foreground"> Course</span>
               </span>
             </Link>
             <p className="text-muted-foreground text-sm">
@@ -37,7 +37,7 @@ const Footer = () => {
         <div className="border-t border-border/30 mt-8 pt-8">
           <div className="h-1 w-full bg-gradient-to-r from-primary via-primary/60 to-primary rounded-full mb-6" />
           <p className="text-center text-sm text-muted-foreground">
-            © {new Date().getFullYear()} CourseHUB. All rights reserved.
+            © {new Date().getFullYear()} Premium Course. All rights reserved.
           </p>
         </div>
       </div>

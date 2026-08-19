@@ -16,7 +16,7 @@ const CourseCard = ({ course }: { course: Course }) => {
       <div className="glass-card overflow-hidden course-card-hover group">
         <div className="h-48 bg-secondary/50 overflow-hidden">
           {course.image_url ? (
-            <img
+            <img referrerPolicy="no-referrer"
               src={course.image_url}
               alt={course.title}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
