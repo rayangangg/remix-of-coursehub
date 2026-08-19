@@ -12,6 +12,7 @@ import {
   ArrowLeft,
   Loader2,
   Video,
+  FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -196,6 +197,17 @@ const CoursePlayer = () => {
               <h2 className="font-display font-semibold text-foreground text-lg mb-3">
                 {activeLesson?.title || "Select a lesson"}
               </h2>
+              {activeLesson?.material_url && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="mr-2 border-primary/50 text-primary hover:bg-primary/10"
+                  onClick={() => openMaterial(activeLesson.material_url)}
+                >
+                  <FileText className="w-4 h-4 mr-2" />
+                  Class Slides / Materials
+                </Button>
+              )}
               {activeLesson && !completedLessonIds.has(activeLesson.id) && (
                 <Button
                   size="sm"
