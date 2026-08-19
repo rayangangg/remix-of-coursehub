@@ -514,9 +514,35 @@ const Admin = () => {
                         <Input
                           value={lessonForm.material_url}
                           onChange={(e) => setLessonForm({ ...lessonForm, material_url: e.target.value })}
-                          placeholder="Material/PDF link (Google Drive, Dropbox, etc.)"
+                          placeholder="Paste Google Drive / Dropbox link for slides (optional)"
                           className="bg-secondary/50 border-border/50"
                         />
+                        <div className="flex flex-wrap items-center gap-3">
+                          <label className="inline-flex items-center gap-2 text-sm text-primary cursor-pointer border border-primary/40 rounded-lg px-3 py-2 hover:bg-primary/10">
+                            {uploadingMaterial ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <FileText className="w-4 h-4" />
+                            )}
+                            Upload class slides
+                            <input
+                              type="file"
+                              className="hidden"
+                              disabled={uploadingMaterial}
+                              accept=".pdf,.ppt,.pptx,.doc,.docx,.zip,.png,.jpg,.jpeg"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                e.target.value = "";
+                                if (file) handleMaterialUpload(file);
+                              }}
+                            />
+                          </label>
+                          {isStoredMaterial(lessonForm.material_url) && (
+                            <span className="text-xs text-success truncate max-w-[240px]">
+                              Uploaded: {lessonForm.material_url.split("/").pop()}
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <div className="flex items-center gap-4">
                         <label className="flex items-center gap-2 text-sm text-foreground/80">
