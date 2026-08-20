@@ -1,11 +1,13 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
-import { Copy, CheckCircle, Loader2, Tag } from "lucide-react";
+import { Copy, CheckCircle, Loader2, Tag, LogIn } from "lucide-react";
 
 interface Course {
   id: string;
@@ -16,6 +18,7 @@ interface Course {
 }
 
 const PaymentForm = ({ course }: { course: Course }) => {
+  const { session } = useAuth();
   const [copied, setCopied] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -33,8 +36,35 @@ const PaymentForm = ({ course }: { course: Course }) => {
   );
 
   const [form, setForm] = useState({
-    fullName: "", email: "", phone: "", transactionId: "",
+    fullName: "",
+    phone: "",
+    transactionId: "",
   });
+
+  // Auto-fill name from profile / auth metadata
+  useEffect(() => {
+    if (!session?.user) return;
+    const metaName =
+      (session.user.user_metadata?.full_name as string) ||
+      (session.user.user_metadata?.name as string) ||
+      "";
+    setForm((prev) => ({
+      ...prev,
+      fullName: prev.fullName || metaName,
+    }));
+
+    // profiles থেকে নাম আনার চেষ্টা
+    (async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", session.user.id)
+        .maybeSingle();
+      if (data?.full_name) {
+        setForm((prev) => ({ ...prev, fullName: data.full_name || prev.fullName }));
+      }
+    })();
+  }, [session?.user?.id]);
 
   const discount = promoApplied && course.discount_percent ? course.discount_percent : 0;
   const finalBDT = Math.round(course.price_bdt * (1 - discount / 100));
@@ -54,20 +84,42 @@ const PaymentForm = ({ course }: { course: Course }) => {
     }
   };
 
+  // Login ছাড়া form দেখাবে না
+  if (!session?.user) {
+    return (
+      <div className="glass-card p-6 text-center space-y-4 animate-fade-in">
+        <LogIn className="w-10 h-10 text-primary mx-auto" />
+        <h3 className="font-display font-bold text-lg text-foreground">Login required</h3>
+        <p className="text-sm text-muted-foreground">
+          Course কিনতে আগে Sign in / Sign up করুন। আপনার account email দিয়েই order যাবে।
+        </p>
+        <Button asChild className="w-full btn-primary">
+          <Link to="/auth">Sign in to buy</Link>
+        </Button>
+      </div>
+    );
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!session?.user) return;
     setLoading(true);
     try {
+      const email = (session.user.email || "").trim().toLowerCase();
+      if (!email) throw new Error("Your account has no email. Please update your profile.");
+
       const { error } = await supabase.from("orders").insert({
         course_id: course.id,
-        full_name: form.fullName,
-        email: form.email,
-        phone: form.phone,
+        full_name: form.fullName.trim() || email,
+        email,
+        phone: form.phone.trim(),
         country: "Bangladesh",
         payment_method: "bkash/nagad",
-        transaction_id: form.transactionId,
+        transaction_id: form.transactionId.trim(),
         currency: "BDT",
         amount: finalBDT,
+        user_id: session.user.id,
+        status: "pending",
       });
       if (error) throw error;
       setSuccess(true);
@@ -93,7 +145,9 @@ const PaymentForm = ({ course }: { course: Course }) => {
         </div>
         <h3 className="text-xl font-display font-bold text-foreground mb-2">Thank You!</h3>
         <p className="text-muted-foreground text-sm">
-          Your enrollment request has been submitted! We will verify your payment and send you access details to your email shortly.
+          Your enrollment request has been submitted with{" "}
+          <span className="text-foreground font-medium">{session.user.email}</span>.
+          We will verify your payment shortly.
         </p>
       </div>
     );
@@ -101,7 +155,6 @@ const PaymentForm = ({ course }: { course: Course }) => {
 
   return (
     <div className="glass-card p-6 sticky top-24 animate-fade-in">
-      {/* Price Display */}
       <div className="text-center mb-5">
         <p className="text-xs text-muted-foreground mb-1">Course Price</p>
         {discount > 0 ? (
@@ -117,9 +170,9 @@ const PaymentForm = ({ course }: { course: Course }) => {
         )}
       </div>
 
-      {/* Promo Code */}
-      {course.promo_code && !promoApplied && (
-        <div className="flex gap-2 mb-5">
+      {/* Promo */}
+      {course.promo_code && (
+        <div className="flex gap-2 mb-4">
           <div className="relative flex-1">
             <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
             <Input
@@ -135,60 +188,74 @@ const PaymentForm = ({ course }: { course: Course }) => {
         </div>
       )}
 
-      {/* Payment Numbers */}
+      {/* Payment numbers */}
       <div className="space-y-2 mb-4">
-        <div className="rounded-lg border border-bkash/30 bg-bkash/5 p-3">
-          <p className="text-xs text-muted-foreground mb-1">bKash (Personal)</p>
-          <div className="flex items-center justify-between gap-3">
-            <span className="font-mono font-bold text-foreground text-sm break-all">{paymentNumbers.bkash}</span>
-            <button type="button" onClick={() => copyNumber(paymentNumbers.bkash, "bkash")}
-              className="flex items-center gap-1 text-xs text-bkash hover:text-bkash/80 transition-colors flex-shrink-0">
-              {copied === "bkash" ? <CheckCircle className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-              {copied === "bkash" ? "Copied!" : "Copy"}
-            </button>
+        <div className="rounded-lg border border-bkash/30 bg-bkash/5 p-3 flex items-center justify-between">
+          <div>
+            <p className="text-xs text-muted-foreground">bKash (Personal)</p>
+            <p className="font-mono font-semibold text-foreground">{paymentNumbers.bkash}</p>
           </div>
+          <Button size="sm" variant="ghost" onClick={() => copyNumber(paymentNumbers.bkash, "bkash")}>
+            {copied === "bkash" ? <CheckCircle className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
+          </Button>
         </div>
-        <div className="rounded-lg border border-nagad/30 bg-nagad/5 p-3">
-          <p className="text-xs text-muted-foreground mb-1">Nagad (Personal)</p>
-          <div className="flex items-center justify-between gap-3">
-            <span className="font-mono font-bold text-foreground text-sm break-all">{paymentNumbers.nagad}</span>
-            <button type="button" onClick={() => copyNumber(paymentNumbers.nagad, "nagad")}
-              className="flex items-center gap-1 text-xs text-nagad hover:text-nagad/80 transition-colors flex-shrink-0">
-              {copied === "nagad" ? <CheckCircle className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-              {copied === "nagad" ? "Copied!" : "Copy"}
-            </button>
+        <div className="rounded-lg border border-nagad/30 bg-nagad/5 p-3 flex items-center justify-between">
+          <div>
+            <p className="text-xs text-muted-foreground">Nagad (Personal)</p>
+            <p className="font-mono font-semibold text-foreground">{paymentNumbers.nagad}</p>
           </div>
+          <Button size="sm" variant="ghost" onClick={() => copyNumber(paymentNumbers.nagad, "nagad")}>
+            {copied === "nagad" ? <CheckCircle className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
+          </Button>
         </div>
-        <p className="text-xs text-muted-foreground text-center">
-          Send <span className="text-primary font-semibold">৳{finalBDT}</span> to any number above, then fill in the form below
-        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-3">
+        {/* Account email — read only, no separate email field */}
         <div className="space-y-1.5">
-          <Label className="text-foreground/80 text-xs">Full Name</Label>
-          <Input value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })}
-            placeholder="Your full name" className="bg-secondary/50 border-border/50" required />
-        </div>
-        <div className="space-y-1.5">
-          <Label className="text-foreground/80 text-xs">Email</Label>
-          <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
-            placeholder="you@email.com" className="bg-secondary/50 border-border/50" required />
-        </div>
-        <div className="space-y-1.5">
-          <Label className="text-foreground/80 text-xs">Phone Number</Label>
-          <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })}
-            placeholder="+880..." className="bg-secondary/50 border-border/50" required />
-        </div>
-        <div className="space-y-1.5">
-          <Label className="text-foreground/80 text-xs">Transaction ID (TrxID)</Label>
-          <Input value={form.transactionId} onChange={(e) => setForm({ ...form, transactionId: e.target.value })}
-            placeholder="e.g. ABC12345" className="bg-secondary/50 border-border/50" required />
+          <Label className="text-foreground/80 text-xs">Account Email</Label>
+          <Input
+            value={session.user.email || ""}
+            disabled
+            className="bg-secondary/30 border-border/50 text-muted-foreground"
+          />
         </div>
 
-        <Button type="submit" disabled={loading}
-          className="w-full btn-primary py-5 glow-sm font-semibold rounded-lg mt-2">
-          {loading && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+        <div className="space-y-1.5">
+          <Label className="text-foreground/80 text-xs">Full Name</Label>
+          <Input
+            value={form.fullName}
+            onChange={(e) => setForm({ ...form, fullName: e.target.value })}
+            placeholder="Your full name"
+            className="bg-secondary/50 border-border/50"
+            required
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label className="text-foreground/80 text-xs">Phone Number</Label>
+          <Input
+            value={form.phone}
+            onChange={(e) => setForm({ ...form, phone: e.target.value })}
+            placeholder="+880..."
+            className="bg-secondary/50 border-border/50"
+            required
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label className="text-foreground/80 text-xs">Transaction ID (TrxID)</Label>
+          <Input
+            value={form.transactionId}
+            onChange={(e) => setForm({ ...form, transactionId: e.target.value })}
+            placeholder="e.g. ABC12345"
+            className="bg-secondary/50 border-border/50"
+            required
+          />
+        </div>
+
+        <Button type="submit" disabled={loading} className="w-full btn-primary py-5 font-semibold">
+          {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
           Verify & Enroll Now
         </Button>
       </form>
