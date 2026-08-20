@@ -193,6 +193,13 @@ export type Database = {
             referencedRelation: "lessons"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "lesson_progress_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       lessons: {
@@ -412,7 +419,57 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      lessons_public: {
+        Row: {
+          course_id: string | null
+          created_at: string | null
+          duration_minutes: number | null
+          id: string | null
+          is_free: boolean | null
+          section_id: string | null
+          sort_order: number | null
+          title: string | null
+          video_url: string | null
+        }
+        Insert: {
+          course_id?: string | null
+          created_at?: string | null
+          duration_minutes?: number | null
+          id?: string | null
+          is_free?: boolean | null
+          section_id?: string | null
+          sort_order?: number | null
+          title?: string | null
+          video_url?: never
+        }
+        Update: {
+          course_id?: string | null
+          created_at?: string | null
+          duration_minutes?: number | null
+          id?: string | null
+          is_free?: boolean | null
+          section_id?: string | null
+          sort_order?: number | null
+          title?: string | null
+          video_url?: never
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lessons_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lessons_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "course_sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       course_materials_storage_usage: { Args: never; Returns: number }
