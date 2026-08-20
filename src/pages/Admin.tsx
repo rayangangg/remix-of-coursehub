@@ -241,18 +241,84 @@ const Admin = () => {
     },
   });
 
-  const updateOrderStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const { error } = await supabase.from("orders").update({ status }).eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
-      queryClient.invalidateQueries({ queryKey: ["admin-enrollments"] });
-      toast({ title: "Order status updated! Student auto-enrolled if account exists." });
-    },
-  });
+const updateOrderStatus = useMutation({
+  mutationFn: async ({ id, status }: { id: string; status: string }) => {
+    // 1. Order status আপডেট
+    const { data: order, error: orderError } = await supabase
+      .from("orders")
+      .update({ status })
+      .eq("id", id)
+      .select("id, email, course_id, user_id, full_name")
+      .single();
 
+    if (orderError) throw orderError;
+
+    // 2. শুধু verified হলে enrollment তৈরি করো
+    if (status === "verified" && order) {
+      let userId = order.user_id;
+
+      // user_id না থাকলে email দিয়ে profiles থেকে খুঁজো
+      if (!userId && order.email) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("email", order.email.trim().toLowerCase())
+          .maybeSingle();
+
+        if (profile?.id) {
+          userId = profile.id;
+          // order-এ user_id সেট করে দাও
+          await supabase
+            .from("orders")
+            .update({ user_id: userId })
+            .eq("id", order.id);
+        }
+      }
+
+      if (userId) {
+        // ইতিমধ্যে enrolled আছে কিনা চেক
+        const { data: existing } = await supabase
+          .from("enrollments")
+          .select("id")
+          .eq("user_id", userId)
+          .eq("course_id", order.course_id)
+          .maybeSingle();
+
+        if (!existing) {
+          const { error: enrollError } = await supabase.from("enrollments").insert({
+            user_id: userId,
+            course_id: order.course_id,
+          });
+          if (enrollError) throw enrollError;
+        }
+      } else {
+        // কোনো matching user পাওয়া যায়নি
+        console.warn("No matching user found for email:", order.email);
+      }
+    }
+  },
+  onSuccess: (_data, variables) => {
+    queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+    queryClient.invalidateQueries({ queryKey: ["admin-enrollments"] });
+    queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
+
+    if (variables.status === "verified") {
+      toast({
+        title: "Order verified!",
+        description: "Student enrolled if they have an account with the same email. Otherwise ask them to sign up with that email.",
+      });
+    } else {
+      toast({ title: "Order status updated!" });
+    }
+  },
+  onError: (err: any) => {
+    toast({
+      title: "Error",
+      description: err.message || "Failed to update order",
+      variant: "destructive",
+    });
+  },
+});
   const addSection = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.from("course_sections").insert({
