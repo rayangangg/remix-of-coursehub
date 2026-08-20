@@ -12,6 +12,7 @@ import CourseDetail from "./pages/CourseDetail";
 import CoursePlayer from "./pages/CoursePlayer";
 import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
+import AdminFiles from "./pages/AdminFiles";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
@@ -41,6 +42,8 @@ const App = () => (
             <Route path="/learn/:id" element={<CoursePlayer />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/admin/files" element={<AdminFiles />} />
+            <Route path="/files" element={<AdminFiles />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
