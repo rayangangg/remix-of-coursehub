@@ -72,7 +72,14 @@ const PaymentForm = ({ course }: { course: Course }) => {
       if (error) throw error;
       setSuccess(true);
     } catch (error: any) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      const isDuplicate = error?.code === "23505";
+      toast({
+        title: isDuplicate ? "Already requested" : "Error",
+        description: isDuplicate
+          ? "You already requested enrollment for this course. We're reviewing your payment — no need to submit again."
+          : error.message,
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
