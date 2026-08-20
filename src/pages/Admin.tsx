@@ -109,18 +109,36 @@ const Admin = () => {
     enabled: isAdmin && !!managingSections,
   });
 
-  const { data: enrollments, isLoading: enrollmentsLoading } = useQuery({
-    queryKey: ["admin-enrollments"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("enrollments")
-        .select("*, courses(title)")
-        .order("enrolled_at", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
-    enabled: shouldLoadEnrollments,
-  });
+const { data: enrollments, isLoading: enrollmentsLoading } = useQuery({
+  queryKey: ["admin-enrollments"],
+  queryFn: async () => {
+    const { data, error } = await supabase
+      .from("enrollments")
+      .select("*, courses(title)")
+      .order("enrolled_at", { ascending: false });
+    if (error) throw error;
+
+    // profiles থেকে নাম/ইমেইল আনার চেষ্টা
+    if (data && data.length > 0) {
+      const userIds = [...new Set(data.map((e: any) => e.user_id))];
+      const { data: profilesData } = await supabase
+        .from("profiles")
+        .select("id, email, full_name")
+        .in("id", userIds);
+
+      const profileMap = new Map(
+        (profilesData || []).map((p: any) => [p.id, p])
+      );
+
+      return data.map((e: any) => ({
+        ...e,
+        profile: profileMap.get(e.user_id) || null,
+      }));
+    }
+    return data;
+  },
+  enabled: shouldLoadEnrollments,
+});
 
   const { data: profiles, isLoading: profilesLoading } = useQuery({
     queryKey: ["admin-profiles"],
