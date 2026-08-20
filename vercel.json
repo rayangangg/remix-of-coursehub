@@ -1,7 +1,11 @@
 {
   "rewrites": [
     {
-      "source": "/((?!assets/|favicon|robots.txt|sitemap.xml).*)",
+      "source": "/:file([^/]+\\.[^/]+)",
+      "destination": "/api/public-file?path=/:file"
+    },
+    {
+      "source": "/((?!api/|assets/).*)",
       "destination": "/index.html"
     }
   ]
