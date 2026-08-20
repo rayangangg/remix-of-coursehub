@@ -12,6 +12,7 @@ import CourseDetail from "./pages/CourseDetail";
 import CoursePlayer from "./pages/CoursePlayer";
 import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
+import AdminFiles from "./pages/AdminFiles";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
