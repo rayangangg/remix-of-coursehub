@@ -14,7 +14,6 @@ const BUCKET = "course-materials";
 
 export default async function handler(req, res) {
   try {
-    // Support both ?path= and the rewritten path
     let rawPath = "";
     if (typeof req.query?.path === "string") {
       rawPath = req.query.path;
@@ -31,13 +30,13 @@ export default async function handler(req, res) {
 
     // Only allow a single, root-level filename — never traverse into subfolders.
     if (!filename || filename.includes("/") || filename.includes("..") || filename.includes("\\")) {
-      res.status(404).send("Not found");
+      res.status(404).setHeader("Cache-Control", "no-store").send("Not found");
       return;
     }
 
     if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
       console.error("Missing VITE_SUPABASE_URL or VITE_SUPABASE_PUBLISHABLE_KEY");
-      res.status(500).send("Storage not configured");
+      res.status(500).setHeader("Cache-Control", "no-store").send("Storage not configured");
       return;
     }
 
@@ -45,15 +44,14 @@ export default async function handler(req, res) {
     const { data, error } = await supabase.storage.from(BUCKET).download(filename);
 
     if (error || !data) {
-      console.error("Download error for", filename, error?.message || error);
-      res.status(404).send("Not found");
+      // Important: do not cache 404s for long, so deletes take effect quickly
+      res.status(404).setHeader("Cache-Control", "public, max-age=10, s-maxage=10").send("Not found");
       return;
     }
 
     const arrayBuffer = await data.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Prefer Blob.type, fall back to extension map
     let contentType = data.type || "application/octet-stream";
     if (!contentType || contentType === "application/octet-stream") {
       const ext = filename.split(".").pop()?.toLowerCase();
@@ -78,11 +76,12 @@ export default async function handler(req, res) {
     }
 
     res.setHeader("Content-Type", contentType);
-    res.setHeader("Cache-Control", "public, max-age=300, s-maxage=300, stale-while-revalidate=3600");
+    // Short cache so admin delete/upload becomes visible quickly
+    res.setHeader("Cache-Control", "public, max-age=30, s-maxage=30, stale-while-revalidate=60");
     res.setHeader("Content-Length", buffer.length);
     res.status(200).send(buffer);
   } catch (e) {
     console.error("public-file handler error:", e);
-    res.status(500).send("Internal error");
+    res.status(500).setHeader("Cache-Control", "no-store").send("Internal error");
   }
 }
