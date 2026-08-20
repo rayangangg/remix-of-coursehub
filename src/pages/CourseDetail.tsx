@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -82,7 +82,7 @@ const CourseDetail = () => {
       return next;
     });
   };
-
+const navigate = useNavigate();
   const totalLessons = sections?.reduce((acc, s) => acc + ((s.lessons as LessonItem[])?.length || 0), 0) || 0;
 
   const freePreviewLessons = useMemo(() => {
@@ -316,26 +316,32 @@ const CourseDetail = () => {
             <div className="lg:col-span-1">
               <div className="sticky top-24 space-y-4">
                 {!showPayment ? (
-                  <div className="glass-card p-6 space-y-4">
-                    <div className="text-center">
-                      <p className="text-3xl font-display font-bold text-primary">৳{course.price_bdt}</p>
-                    </div>
-                    <Button
-                      onClick={() => setShowPayment(true)}
-                      className="w-full btn-primary py-6 text-base glow-sm"
-                      size="lg"
-                    >
-                      Buy Now
-                    </Button>
-                    <div className="text-center text-xs text-muted-foreground space-y-1">
-                      <p>✓ Lifetime access</p>
-                      <p>✓ All course materials</p>
-                      <p>✓ Certificate of completion</p>
-                    </div>
-                  </div>
-                ) : (
-                  <PaymentForm course={course} />
-                )}
+  <div className="glass-card p-6 space-y-4">
+    <div className="text-center">
+      <p className="text-3xl font-display font-bold text-primary">৳{course.price_bdt}</p>
+    </div>
+    <Button
+      onClick={() => {
+        if (!session?.user) {
+          navigate("/auth");
+          return;
+        }
+        setShowPayment(true);
+      }}
+      className="w-full btn-primary py-6 text-base glow-sm"
+      size="lg"
+    >
+      {session?.user ? "Buy Now" : "Login to Buy"}
+    </Button>
+    <div className="text-center text-xs text-muted-foreground space-y-1">
+      <p>✓ Lifetime access</p>
+      <p>✓ All course materials</p>
+      <p>✓ Certificate of completion</p>
+    </div>
+  </div>
+) : (
+  <PaymentForm course={course} />
+      )}
               </div>
             </div>
           </div>
