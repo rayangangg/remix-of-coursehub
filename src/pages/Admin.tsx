@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,16 +21,18 @@ import {
   Plus, Trash2, Edit, CheckCircle, XCircle, Clock, Eye, EyeOff,
   Package, Users, Loader2, Layers, Video, UserPlus, Search,
   BarChart3, ArrowLeft, Link as LinkIcon, RefreshCw, Settings2,
-  Palette, Smartphone, Image, FileText,
+  Palette, Smartphone, Image, FileText, FolderOpen, ShieldCheck, ShieldOff,
 } from "lucide-react";
 
 const Admin = () => {
   const { session, isAdmin, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<
     "dashboard" | "courses" | "orders" | "enrollments" | "users" | "settings"
   >("dashboard");
+  const [userSearch, setUserSearch] = useState("");
   const [editingCourse, setEditingCourse] = useState<any>(null);
   const [showForm, setShowForm] = useState(false);
   const [managingSections, setManagingSections] = useState<string | null>(null);
@@ -129,6 +131,18 @@ const Admin = () => {
     },
     enabled: shouldLoadProfiles,
   });
+
+  const { data: adminRoles } = useQuery({
+    queryKey: ["admin-roles"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("user_roles").select("user_id").eq("role", "admin");
+      if (error) throw error;
+      return data;
+    },
+    enabled: shouldLoadProfiles,
+  });
+
+  const adminUserIds = new Set((adminRoles || []).map((r: any) => r.user_id));
 
   const { data: storageUsed = 0 } = useQuery({
     queryKey: ["storage-usage"],
@@ -309,6 +323,23 @@ const Admin = () => {
       queryClient.invalidateQueries({ queryKey: ["admin-enrollments"] });
       toast({ title: "Enrollment removed" });
     },
+  });
+
+  const toggleAdminRole = useMutation({
+    mutationFn: async ({ userId, makeAdmin }: { userId: string; makeAdmin: boolean }) => {
+      if (makeAdmin) {
+        const { error } = await supabase.from("user_roles").insert({ user_id: userId, role: "admin" });
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", "admin");
+        if (error) throw error;
+      }
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["admin-roles"] });
+      toast({ title: variables.makeAdmin ? "User promoted to admin" : "Admin access removed" });
+    },
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
   const togglePublish = useMutation({
@@ -685,12 +716,17 @@ const Admin = () => {
         <div className="container mx-auto max-w-6xl">
           <div className="flex items-center justify-between mb-8">
             <h1 className="text-2xl font-display font-bold text-foreground">Admin Dashboard</h1>
-            <Button variant="ghost" size="sm" onClick={() => {
-              queryClient.invalidateQueries();
-              toast({ title: "Data refreshed!" });
-            }}>
-              <RefreshCw className="w-4 h-4 mr-1" /> Refresh
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => navigate("/admin/files")}>
+                <FolderOpen className="w-4 h-4 mr-1" /> Files
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => {
+                queryClient.invalidateQueries();
+                toast({ title: "Data refreshed!" });
+              }}>
+                <RefreshCw className="w-4 h-4 mr-1" /> Refresh
+              </Button>
+            </div>
           </div>
 
           {/* Tabs */}
@@ -720,6 +756,12 @@ const Admin = () => {
                 ) : null}
               </button>
             ))}
+            <button
+              onClick={() => navigate("/admin/files")}
+              className="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all bg-card text-muted-foreground hover:text-foreground border border-border/50"
+            >
+              <FolderOpen className="w-4 h-4" /> Files
+            </button>
           </div>
 
           {/* ===== DASHBOARD TAB ===== */}
@@ -1330,24 +1372,97 @@ const Admin = () => {
           {/* ===== USERS TAB ===== */}
           {activeTab === "users" && (
             <div className="space-y-3 animate-fade-in">
-              <p className="text-sm text-muted-foreground mb-4">
-                Registered users: {profiles?.length || 0}
-              </p>
+              <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+                <p className="text-sm text-muted-foreground">
+                  Registered users: {profiles?.length || 0}
+                </p>
+                <div className="relative w-full sm:w-64">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                  <Input
+                    value={userSearch}
+                    onChange={(e) => setUserSearch(e.target.value)}
+                    placeholder="Search by name or email"
+                    className="pl-9 bg-secondary/50 border-border/50 text-sm"
+                  />
+                </div>
+              </div>
               {profilesLoading ? (
                 <div className="space-y-3">{[1, 2, 3].map((i) => <div key={i} className="glass-card h-20 animate-pulse" />)}</div>
               ) : profiles && profiles.length > 0 ? (
-                profiles.map((profile: any) => (
-                  <div key={profile.id} className="glass-card p-4 flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                      <Users className="w-5 h-5 text-primary" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-medium text-foreground text-sm">{profile.full_name || "Unknown"}</p>
-                      <p className="text-xs text-muted-foreground">{profile.email}</p>
-                    </div>
-                    <p className="text-xs text-muted-foreground ml-auto">{new Date(profile.created_at).toLocaleDateString()}</p>
-                  </div>
-                ))
+                (() => {
+                  const q = userSearch.trim().toLowerCase();
+                  const filteredProfiles = q
+                    ? profiles.filter(
+                        (p: any) =>
+                          p.full_name?.toLowerCase().includes(q) || p.email?.toLowerCase().includes(q),
+                      )
+                    : profiles;
+
+                  if (filteredProfiles.length === 0) {
+                    return (
+                      <div className="glass-card p-12 text-center">
+                        <Search className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
+                        <p className="text-muted-foreground">No users match "{userSearch}".</p>
+                      </div>
+                    );
+                  }
+
+                  return filteredProfiles.map((profile: any) => {
+                    const userIsAdmin = adminUserIds.has(profile.id);
+                    const isSelf = profile.id === session?.user?.id;
+                    return (
+                      <div key={profile.id} className="glass-card p-4 flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                          <Users className="w-5 h-5 text-primary" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-medium text-foreground text-sm flex items-center gap-2">
+                            {profile.full_name || "Unknown"}
+                            {userIsAdmin && (
+                              <span className="text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full flex-shrink-0">
+                                Admin
+                              </span>
+                            )}
+                            {isSelf && (
+                              <span className="text-xs text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded-full flex-shrink-0">
+                                You
+                              </span>
+                            )}
+                          </p>
+                          <p className="text-xs text-muted-foreground">{profile.email}</p>
+                        </div>
+                        <p className="text-xs text-muted-foreground ml-auto hidden sm:block">
+                          {new Date(profile.created_at).toLocaleDateString()}
+                        </p>
+                        {userIsAdmin ? (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={toggleAdminRole.isPending}
+                            onClick={() => {
+                              if (confirm(`Remove admin access for ${profile.full_name || profile.email}?`)) {
+                                toggleAdminRole.mutate({ userId: profile.id, makeAdmin: false });
+                              }
+                            }}
+                            className="border-destructive/50 text-destructive hover:bg-destructive/10 flex-shrink-0"
+                          >
+                            <ShieldOff className="w-3.5 h-3.5 mr-1" /> Demote
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={toggleAdminRole.isPending}
+                            onClick={() => toggleAdminRole.mutate({ userId: profile.id, makeAdmin: true })}
+                            className="border-primary/50 text-primary hover:bg-primary/10 flex-shrink-0"
+                          >
+                            <ShieldCheck className="w-3.5 h-3.5 mr-1" /> Make Admin
+                          </Button>
+                        )}
+                      </div>
+                    );
+                  });
+                })()
               ) : (
                 <div className="glass-card p-12 text-center">
                   <Users className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
