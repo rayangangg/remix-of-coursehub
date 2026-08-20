@@ -42,6 +42,8 @@ const App = () => (
             <Route path="/learn/:id" element={<CoursePlayer />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/admin/files" element={<AdminFiles />} />
+            <Route path="/files" element={<AdminFiles />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
