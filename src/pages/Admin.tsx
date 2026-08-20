@@ -365,6 +365,14 @@ const Admin = () => {
 
   const handleMaterialUpload = async (file: File) => {
     if (!managingSections) return;
+    if (!lessonForm.title.trim()) {
+      toast({
+        title: "Add the class name first",
+        description: "The slide file is renamed after the class title.",
+        variant: "destructive",
+      });
+      return;
+    }
     if (storageUsed + file.size > STORAGE_QUOTA_BYTES) {
       toast({
         title: "Storage full",
@@ -375,16 +383,17 @@ const Admin = () => {
     }
     setUploadingMaterial(true);
     try {
-      const path = await uploadMaterial(managingSections, file);
+      const path = await uploadMaterial(managingSections, file, lessonForm.title);
       setLessonForm((prev) => ({ ...prev, material_url: path }));
       queryClient.invalidateQueries({ queryKey: ["storage-usage"] });
-      toast({ title: "Slides uploaded!" });
+      toast({ title: `Slides uploaded as ${path.split("/").pop()}` });
     } catch (e: any) {
       toast({ title: "Upload failed", description: e.message, variant: "destructive" });
     } finally {
       setUploadingMaterial(false);
     }
   };
+
 
   const resetForm = () => {
     setCourseForm({
