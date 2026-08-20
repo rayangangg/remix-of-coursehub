@@ -1213,21 +1213,26 @@ const updateOrderStatus = useMutation({
                 <div className="space-y-3">{[1, 2, 3].map((i) => <div key={i} className="glass-card h-20 animate-pulse" />)}</div>
               ) : enrollments && enrollments.length > 0 ? (
                 enrollments.map((enrollment: any) => (
-                  <div key={enrollment.id} className="glass-card p-4 flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-foreground">
-                        User: <span className="font-mono text-muted-foreground">{enrollment.user_id.slice(0, 8)}...</span>
-                      </p>
-                      <p className="text-sm text-primary">{(enrollment.courses as any)?.title}</p>
-                      <p className="text-xs text-muted-foreground">{new Date(enrollment.enrolled_at).toLocaleDateString()}</p>
-                    </div>
-                    <Button size="sm" variant="ghost"
-                      onClick={() => { if (confirm("Remove this enrollment?")) deleteEnrollment.mutate(enrollment.id); }}
-                      className="text-destructive">
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))
+  <div key={enrollment.id} className="glass-card p-4 flex items-center justify-between">
+    <div>
+      <p className="text-sm font-medium text-foreground">
+        {enrollment.profile?.full_name || enrollment.profile?.email || (
+          <>User: <span className="font-mono text-muted-foreground">{enrollment.user_id.slice(0, 8)}...</span></>
+        )}
+      </p>
+      {enrollment.profile?.email && (
+        <p className="text-xs text-muted-foreground">{enrollment.profile.email}</p>
+      )}
+      <p className="text-sm text-primary">{(enrollment.courses as any)?.title}</p>
+      <p className="text-xs text-muted-foreground">{new Date(enrollment.enrolled_at).toLocaleString()}</p>
+    </div>
+    <Button size="sm" variant="ghost"
+      onClick={() => { if (confirm("Remove this enrollment?")) deleteEnrollment.mutate(enrollment.id); }}
+      className="text-destructive">
+      <Trash2 className="w-4 h-4" />
+    </Button>
+  </div>
+))
               ) : (
                 <div className="glass-card p-12 text-center">
                   <UserPlus className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
