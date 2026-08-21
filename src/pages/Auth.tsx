@@ -12,6 +12,7 @@ const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -26,6 +27,12 @@ const Auth = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!isLogin && password !== confirmPassword) {
+      toast({ title: "Error", description: "Password and confirm password do not match.", variant: "destructive" });
+      return;
+    }
+
     setLoading(true);
     try {
       if (isLogin) {
@@ -41,6 +48,7 @@ const Auth = () => {
         });
         if (error) throw error;
         toast({ title: "Check your email to confirm your account!" });
+        setConfirmPassword("");
       }
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -97,9 +105,30 @@ const Auth = () => {
                 className="pl-10 bg-secondary/50 border-border/50 focus:border-primary"
                 required
                 minLength={6}
+                autoComplete={isLogin ? "current-password" : "new-password"}
               />
             </div>
           </div>
+
+          {!isLogin && (
+            <div className="space-y-2">
+              <Label htmlFor="confirm_password" className="text-foreground/80">Confirm Password</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  id="confirm_password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="pl-10 bg-secondary/50 border-border/50 focus:border-primary"
+                  required
+                  minLength={6}
+                  autoComplete="new-password"
+                />
+              </div>
+            </div>
+          )}
 
           <Button
             type="submit"
@@ -117,7 +146,10 @@ const Auth = () => {
         <p className="text-center mt-6 text-muted-foreground text-sm">
           {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
           <button
-            onClick={() => setIsLogin(!isLogin)}
+            onClick={() => {
+              setIsLogin(!isLogin);
+              setConfirmPassword("");
+            }}
             className="text-primary hover:underline font-medium"
           >
             {isLogin ? "Sign Up" : "Sign In"}

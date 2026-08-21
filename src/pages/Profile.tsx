@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, User, Shield, BookOpen } from "lucide-react";
+import { Loader2, User, Shield, BookOpen, Lock } from "lucide-react";
 
 const Profile = () => {
   const { session, isAdmin, loading: authLoading } = useAuth();
@@ -17,6 +17,9 @@ const Profile = () => {
   const queryClient = useQueryClient();
   const [fullName, setFullName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ["my-profile", session?.user?.id],
@@ -53,6 +56,36 @@ const Profile = () => {
     },
     onError: (error: any) => {
       toast({ title: "Update failed", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const changePassword = useMutation({
+    mutationFn: async () => {
+      if (newPassword.length < 6) {
+        throw new Error("New password must be at least 6 characters.");
+      }
+      if (newPassword !== confirmPassword) {
+        throw new Error("New password and confirm password do not match.");
+      }
+      // Verify the current password by re-authenticating with it
+      const { error: verifyError } = await supabase.auth.signInWithPassword({
+        email: session!.user.email!,
+        password: oldPassword,
+      });
+      if (verifyError) {
+        throw new Error("Current password is incorrect.");
+      }
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: "Password changed successfully" });
+      setOldPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    },
+    onError: (error: any) => {
+      toast({ title: "Could not change password", description: error.message, variant: "destructive" });
     },
   });
 
@@ -137,6 +170,67 @@ const Profile = () => {
                 </Button>
               </>
             )}
+          </section>
+
+          <section className="glass-card p-6 space-y-4">
+            <div>
+              <h2 className="text-lg font-display font-bold text-foreground flex items-center gap-2">
+                <Lock className="w-4 h-4 text-primary" /> Change Password
+              </h2>
+              <p className="text-xs text-muted-foreground mt-1">
+                Enter your current password, then choose a new one.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="old_password">Current Password</Label>
+              <Input
+                id="old_password"
+                type="password"
+                value={oldPassword}
+                onChange={(e) => setOldPassword(e.target.value)}
+                placeholder="••••••••"
+                className="bg-secondary/50 border-border/50"
+                autoComplete="current-password"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="new_password">New Password</Label>
+              <Input
+                id="new_password"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="At least 6 characters"
+                className="bg-secondary/50 border-border/50"
+                autoComplete="new-password"
+                minLength={6}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirm_password">Confirm New Password</Label>
+              <Input
+                id="confirm_password"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Re-enter new password"
+                className="bg-secondary/50 border-border/50"
+                autoComplete="new-password"
+                minLength={6}
+              />
+            </div>
+
+            <Button
+              onClick={() => changePassword.mutate()}
+              disabled={changePassword.isPending || !oldPassword || !newPassword || !confirmPassword}
+              className="btn-primary"
+            >
+              {changePassword.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+              Update Password
+            </Button>
           </section>
         </div>
       </main>
