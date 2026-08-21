@@ -1,6 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-
 export type SiteSettings = {
   is_default: boolean;
   payment_bkash: string;
@@ -17,6 +14,11 @@ export type SiteSettings = {
   stat_lessons: string;
   stat_instructors: string;
   stat_materials: string;
+  // নতুন ফিল্ড
+  logo_url: string | null;
+  og_image_url: string | null;
+  favicon_url: string | null;
+  site_name: string;
 };
 
 export const defaultSiteSettings: SiteSettings = {
@@ -35,21 +37,8 @@ export const defaultSiteSettings: SiteSettings = {
   stat_lessons: "500+",
   stat_instructors: "50+",
   stat_materials: "1k+",
-};
-
-export const useSiteSettings = () => {
-  return useQuery({
-    queryKey: ["site-settings"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("site_settings")
-        .select("*")
-        .eq("is_default", true)
-        .maybeSingle();
-
-      if (error) throw error;
-      return { ...defaultSiteSettings, ...(data ?? {}) } as SiteSettings;
-    },
-    staleTime: 5 * 60 * 1000,
-  });
+  logo_url: null,
+  og_image_url: null,
+  favicon_url: null,
+  site_name: "Premium Course",
 };
