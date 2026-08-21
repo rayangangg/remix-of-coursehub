@@ -60,11 +60,10 @@ const Admin = () => {
     stat_lessons: defaultSiteSettings.stat_lessons,
     stat_instructors: defaultSiteSettings.stat_instructors,
     stat_materials: defaultSiteSettings.stat_materials,
-    hero_image_url: "",
-  logo_url: "",
-  og_image_url: "",
-  favicon_url: "",
-  site_name: "Premium Course",
+    logo_url: "",
+    og_image_url: "",
+    favicon_url: "",
+    site_name: defaultSiteSettings.site_name,
   });
 
   const [courseForm, setCourseForm] = useState({
