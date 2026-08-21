@@ -684,97 +684,6 @@ const updateOrderStatus = useMutation({
                       </Button>
                     </div>
                   </div>
-              {/* Branding: Logo, OG, Favicon */}
-              <div className="glass-card p-5">
-                <div className="flex items-center gap-2 mb-2">
-                  <Image className="w-4 h-4 text-primary" />
-                  <h3 className="font-display font-semibold text-foreground">
-                    Branding (Logo, OG Image, Favicon)
-                  </h3>
-                </div>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Admin → Files থেকে ইমেজ আপলোড করে Share Link কপি করে এখানে পেস্ট করো।
-                </p>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label className="text-foreground/80">Site Name</Label>
-                    <Input
-                      value={siteSettingsForm.site_name}
-                      onChange={(e) =>
-                        setSiteSettingsForm({
-                          ...siteSettingsForm,
-                          site_name: e.target.value,
-                        })
-                      }
-                      className="bg-secondary/50 border-border/50"
-                      placeholder="Premium Course"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-foreground/80">Logo URL</Label>
-                    <Input
-                      value={siteSettingsForm.logo_url}
-                      onChange={(e) =>
-                        setSiteSettingsForm({
-                          ...siteSettingsForm,
-                          logo_url: e.target.value,
-                        })
-                      }
-                      className="bg-secondary/50 border-border/50"
-                      placeholder="https://.../logo.png"
-                    />
-                    {siteSettingsForm.logo_url && (
-                      <img
-                        src={siteSettingsForm.logo_url}
-                        alt="Logo preview"
-                        className="h-10 w-auto object-contain mt-2"
-                        referrerPolicy="no-referrer"
-                      />
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-foreground/80">
-                      OG Image URL (Facebook / Twitter share)
-                    </Label>
-                    <Input
-                      value={siteSettingsForm.og_image_url}
-                      onChange={(e) =>
-                        setSiteSettingsForm({
-                          ...siteSettingsForm,
-                          og_image_url: e.target.value,
-                        })
-                      }
-                      className="bg-secondary/50 border-border/50"
-                      placeholder="https://.../og-image.png"
-                    />
-                    {siteSettingsForm.og_image_url && (
-                      <img
-                        src={siteSettingsForm.og_image_url}
-                        alt="OG preview"
-                        className="w-full max-w-xs h-32 object-cover rounded mt-2"
-                        referrerPolicy="no-referrer"
-                      />
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-foreground/80">Favicon URL</Label>
-                    <Input
-                      value={siteSettingsForm.favicon_url}
-                      onChange={(e) =>
-                        setSiteSettingsForm({
-                          ...siteSettingsForm,
-                          favicon_url: e.target.value,
-                        })
-                      }
-                      className="bg-secondary/50 border-border/50"
-                      placeholder="https://.../favicon.ico"
-                    />
-                  </div>
-                </div>
-              </div>
                   {/* Add Lesson Form */}
                   {addingLessonToSection === section.id && (
                     <div className="p-4 bg-primary/5 border-t border-border/20 space-y-3 animate-fade-in">
@@ -1502,6 +1411,98 @@ const updateOrderStatus = useMutation({
                     <img referrerPolicy="no-referrer" src={siteSettingsForm.hero_image_url} alt="Hero preview" className="w-full h-32 object-cover" />
                   </div>
                 )}
+              </div>
+
+              {/* Branding: Logo, OG, Favicon */}
+              <div className="glass-card p-5">
+                <div className="flex items-center gap-2 mb-2">
+                  <Image className="w-4 h-4 text-primary" />
+                  <h3 className="font-display font-semibold text-foreground">
+                    Branding (Logo, OG Image, Favicon)
+                  </h3>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Admin → Files থেকে ইমেজ আপলোড করে Share Link কপি করে এখানে পেস্ট করো।
+                </p>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-foreground/80">Site Name</Label>
+                    <Input
+                      value={siteSettingsForm.site_name}
+                      onChange={(e) =>
+                        setSiteSettingsForm({
+                          ...siteSettingsForm,
+                          site_name: e.target.value,
+                        })
+                      }
+                      className="bg-secondary/50 border-border/50"
+                      placeholder="Premium Course"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-foreground/80">Logo URL</Label>
+                    <Input
+                      value={siteSettingsForm.logo_url}
+                      onChange={(e) =>
+                        setSiteSettingsForm({
+                          ...siteSettingsForm,
+                          logo_url: e.target.value,
+                        })
+                      }
+                      className="bg-secondary/50 border-border/50"
+                      placeholder="https://.../logo.png"
+                    />
+                    {siteSettingsForm.logo_url && (
+                      <img
+                        src={siteSettingsForm.logo_url}
+                        alt="Logo preview"
+                        className="h-10 w-auto object-contain mt-2"
+                        referrerPolicy="no-referrer"
+                      />
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-foreground/80">
+                      OG Image URL (Facebook / Twitter share)
+                    </Label>
+                    <Input
+                      value={siteSettingsForm.og_image_url}
+                      onChange={(e) =>
+                        setSiteSettingsForm({
+                          ...siteSettingsForm,
+                          og_image_url: e.target.value,
+                        })
+                      }
+                      className="bg-secondary/50 border-border/50"
+                      placeholder="https://.../og-image.png"
+                    />
+                    {siteSettingsForm.og_image_url && (
+                      <img
+                        src={siteSettingsForm.og_image_url}
+                        alt="OG preview"
+                        className="w-full max-w-xs h-32 object-cover rounded mt-2"
+                        referrerPolicy="no-referrer"
+                      />
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-foreground/80">Favicon URL</Label>
+                    <Input
+                      value={siteSettingsForm.favicon_url}
+                      onChange={(e) =>
+                        setSiteSettingsForm({
+                          ...siteSettingsForm,
+                          favicon_url: e.target.value,
+                        })
+                      }
+                      className="bg-secondary/50 border-border/50"
+                      placeholder="https://.../favicon.ico"
+                    />
+                  </div>
+                </div>
               </div>
 
               {/* Homepage Text */}
