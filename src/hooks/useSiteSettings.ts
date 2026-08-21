@@ -1,3 +1,6 @@
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+
 export type SiteSettings = {
   is_default: boolean;
   payment_bkash: string;
@@ -14,7 +17,6 @@ export type SiteSettings = {
   stat_lessons: string;
   stat_instructors: string;
   stat_materials: string;
-  // নতুন ফিল্ড
   logo_url: string | null;
   og_image_url: string | null;
   favicon_url: string | null;
@@ -28,7 +30,8 @@ export const defaultSiteSettings: SiteSettings = {
   hero_badge: "Welcome to Premium Course",
   hero_title: "Master New Skills with",
   hero_highlight: "Premium Online Courses",
-  hero_description: "Join thousands of students learning from expert instructors. Pay with bKash and Nagad.",
+  hero_description:
+    "Join thousands of students learning from expert instructors. Pay with bKash and Nagad.",
   hero_image_url: null,
   primary_hue: 142,
   primary_saturation: 70,
@@ -41,4 +44,21 @@ export const defaultSiteSettings: SiteSettings = {
   og_image_url: null,
   favicon_url: null,
   site_name: "Premium Course",
+};
+
+export const useSiteSettings = () => {
+  return useQuery({
+    queryKey: ["site-settings"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("site_settings")
+        .select("*")
+        .eq("is_default", true)
+        .maybeSingle();
+
+      if (error) throw error;
+      return { ...defaultSiteSettings, ...(data ?? {}) } as SiteSettings;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
 };
