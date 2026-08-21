@@ -1461,14 +1461,8 @@ const updateOrderStatus = useMutation({
 
           {/* ===== USERS TAB ===== */}
           {activeTab === "users" && (
-            <div className="space-y-3 animate-fade-in">
-              <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
-                <p className="text-sm text-muted-foreground">
-                  Registered users:{" "}
-{(profiles || []).filter(
-  (p: any) => !HIDDEN_ADMIN_EMAILS.includes((p.email || "").toLowerCase())
-).length}
-                </p>
+            <div className="space-y-6 animate-fade-in">
+              <div className="flex items-center justify-end gap-3 mb-1 flex-wrap">
                 <div className="relative w-full sm:w-64">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
                   <Input
@@ -1479,101 +1473,131 @@ const updateOrderStatus = useMutation({
                   />
                 </div>
               </div>
+
               {profilesLoading ? (
                 <div className="space-y-3">{[1, 2, 3].map((i) => <div key={i} className="glass-card h-20 animate-pulse" />)}</div>
               ) : profiles && profiles.length > 0 ? (
-  (() => {
-    const q = userSearch.trim().toLowerCase();
+                (() => {
+                  const q = userSearch.trim().toLowerCase();
 
-    // Main admin hide — শুধু এই email বাদ, বাকি সব show
-    const visibleProfiles = profiles.filter(
-      (p: any) => !HIDDEN_ADMIN_EMAILS.includes((p.email || "").toLowerCase())
-    );
+                  // Main admin hide — শুধু এই email বাদ, বাকি সব show
+                  const visibleProfiles = profiles.filter(
+                    (p: any) => !HIDDEN_ADMIN_EMAILS.includes((p.email || "").toLowerCase())
+                  );
 
-    const filteredProfiles = q
-      ? visibleProfiles.filter(
-          (p: any) =>
-            p.full_name?.toLowerCase().includes(q) ||
-            p.email?.toLowerCase().includes(q),
-        )
-      : visibleProfiles;
+                  const filteredProfiles = q
+                    ? visibleProfiles.filter(
+                        (p: any) =>
+                          p.full_name?.toLowerCase().includes(q) ||
+                          p.email?.toLowerCase().includes(q),
+                      )
+                    : visibleProfiles;
 
-    if (filteredProfiles.length === 0) {
-      return (
-        <div className="glass-card p-12 text-center">
-          <Search className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-          <p className="text-muted-foreground">
-            {q ? `No users match "${userSearch}".` : "No users registered yet."}
-          </p>
-        </div>
-      );
-    }
-
-    return filteredProfiles.map((profile: any) => {
-      const userIsAdmin = adminUserIds.has(profile.id);
-      const isSelf = profile.id === session?.user?.id;
-      const isProtectedOwner = HIDDEN_ADMIN_EMAILS.includes(
-        (profile.email || "").toLowerCase()
-      );
-
-      return (
-        <div key={profile.id} className="glass-card p-4 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-            <Users className="w-5 h-5 text-primary" />
-          </div>
-          <div className="min-w-0">
-            <p className="font-medium text-foreground text-sm flex items-center gap-2 flex-wrap">
-              {profile.full_name || "Unknown"}
-              {userIsAdmin && (
-                <span className="text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                  Admin
-                </span>
-              )}
-              {isSelf && (
-                <span className="text-xs text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded-full">
-                  You
-                </span>
-              )}
-            </p>
-            <p className="text-xs text-muted-foreground">{profile.email}</p>
-          </div>
-          <p className="text-xs text-muted-foreground ml-auto hidden sm:block">
-            {new Date(profile.created_at).toLocaleDateString()}
-          </p>
-
-          {/* Protected owner — demote button নেই */}
-          {!isProtectedOwner && (
-            userIsAdmin ? (
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={toggleAdminRole.isPending || isSelf}
-                onClick={() => {
-                  if (confirm(`Remove admin access for ${profile.full_name || profile.email}?`)) {
-                    toggleAdminRole.mutate({ userId: profile.id, makeAdmin: false });
+                  if (filteredProfiles.length === 0) {
+                    return (
+                      <div className="glass-card p-12 text-center">
+                        <Search className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
+                        <p className="text-muted-foreground">
+                          {q ? `No users match "${userSearch}".` : "No users registered yet."}
+                        </p>
+                      </div>
+                    );
                   }
-                }}
-                className="border-destructive/50 text-destructive hover:bg-destructive/10 flex-shrink-0"
-              >
-                <ShieldOff className="w-3.5 h-3.5 mr-1" /> Demote
-              </Button>
-            ) : (
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={toggleAdminRole.isPending}
-                onClick={() => toggleAdminRole.mutate({ userId: profile.id, makeAdmin: true })}
-                className="border-primary/50 text-primary hover:bg-primary/10 flex-shrink-0"
-              >
-                <ShieldCheck className="w-3.5 h-3.5 mr-1" /> Make Admin
-              </Button>
-            )
-          )}
-        </div>
-      );
-    });
-  })()
-) : (                <div className="glass-card p-12 text-center">
+
+                  const adminProfiles = filteredProfiles.filter((p: any) => adminUserIds.has(p.id));
+                  const regularProfiles = filteredProfiles.filter((p: any) => !adminUserIds.has(p.id));
+
+                  const renderRow = (profile: any, userIsAdmin: boolean) => {
+                    const isSelf = profile.id === session?.user?.id;
+                    const isProtectedOwner = HIDDEN_ADMIN_EMAILS.includes(
+                      (profile.email || "").toLowerCase()
+                    );
+
+                    return (
+                      <div key={profile.id} className="glass-card p-4 flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                          <Users className="w-5 h-5 text-primary" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-medium text-foreground text-sm flex items-center gap-2 flex-wrap">
+                            {profile.full_name || "Unknown"}
+                            {userIsAdmin && (
+                              <span className="text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                                Admin
+                              </span>
+                            )}
+                            {isSelf && (
+                              <span className="text-xs text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded-full">
+                                You
+                              </span>
+                            )}
+                          </p>
+                          <p className="text-xs text-muted-foreground">{profile.email}</p>
+                        </div>
+                        <p className="text-xs text-muted-foreground ml-auto hidden sm:block">
+                          {new Date(profile.created_at).toLocaleDateString()}
+                        </p>
+
+                        {/* Protected owner — demote button নেই */}
+                        {!isProtectedOwner && (
+                          userIsAdmin ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={toggleAdminRole.isPending || isSelf}
+                              onClick={() => {
+                                if (confirm(`Remove admin access for ${profile.full_name || profile.email}?`)) {
+                                  toggleAdminRole.mutate({ userId: profile.id, makeAdmin: false });
+                                }
+                              }}
+                              className="border-destructive/50 text-destructive hover:bg-destructive/10 flex-shrink-0"
+                            >
+                              <ShieldOff className="w-3.5 h-3.5 mr-1" /> Demote
+                            </Button>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={toggleAdminRole.isPending}
+                              onClick={() => toggleAdminRole.mutate({ userId: profile.id, makeAdmin: true })}
+                              className="border-primary/50 text-primary hover:bg-primary/10 flex-shrink-0"
+                            >
+                              <ShieldCheck className="w-3.5 h-3.5 mr-1" /> Make Admin
+                            </Button>
+                          )
+                        )}
+                      </div>
+                    );
+                  };
+
+                  return (
+                    <>
+                      <div className="space-y-3">
+                        <h3 className="font-display font-semibold text-foreground flex items-center gap-2">
+                          <ShieldCheck className="w-4 h-4 text-primary" /> Admins ({adminProfiles.length})
+                        </h3>
+                        {adminProfiles.length === 0 ? (
+                          <p className="text-sm text-muted-foreground">No other admins yet.</p>
+                        ) : (
+                          <div className="space-y-3">{adminProfiles.map((p: any) => renderRow(p, true))}</div>
+                        )}
+                      </div>
+
+                      <div className="space-y-3">
+                        <h3 className="font-display font-semibold text-foreground flex items-center gap-2">
+                          <Users className="w-4 h-4 text-primary" /> Users ({regularProfiles.length})
+                        </h3>
+                        {regularProfiles.length === 0 ? (
+                          <p className="text-sm text-muted-foreground">No regular users match this search.</p>
+                        ) : (
+                          <div className="space-y-3">{regularProfiles.map((p: any) => renderRow(p, false))}</div>
+                        )}
+                      </div>
+                    </>
+                  );
+                })()
+              ) : (
+                <div className="glass-card p-12 text-center">
                   <Users className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
                   <p className="text-muted-foreground">No users registered yet.</p>
                 </div>
