@@ -207,11 +207,10 @@ const { data: enrollments, isLoading: enrollmentsLoading } = useQuery({
       stat_lessons: siteSettings.stat_lessons,
       stat_instructors: siteSettings.stat_instructors,
       stat_materials: siteSettings.stat_materials,
-      hero_image_url: siteSettings.hero_image_url || "",
-  logo_url: siteSettings.logo_url || "",
-  og_image_url: siteSettings.og_image_url || "",
-  favicon_url: siteSettings.favicon_url || "",
-  site_name: siteSettings.site_name || "Premium Course",
+      logo_url: siteSettings.logo_url || "",
+      og_image_url: siteSettings.og_image_url || "",
+      favicon_url: siteSettings.favicon_url || "",
+      site_name: siteSettings.site_name || "Premium Course",
     });
   }, [siteSettings]);
 
@@ -455,7 +454,7 @@ const updateOrderStatus = useMutation({
       const saturation = Math.max(0, Math.min(100, Number(siteSettingsForm.primary_saturation) || defaultSiteSettings.primary_saturation));
       const lightness = Math.max(0, Math.min(100, Number(siteSettingsForm.primary_lightness) || defaultSiteSettings.primary_lightness));
 
-      const payload = {
+            const payload = {
         is_default: true,
         payment_bkash: siteSettingsForm.payment_bkash.trim() || defaultSiteSettings.payment_bkash,
         payment_nagad: siteSettingsForm.payment_nagad.trim() || defaultSiteSettings.payment_nagad,
@@ -471,13 +470,11 @@ const updateOrderStatus = useMutation({
         stat_lessons: siteSettingsForm.stat_lessons.trim() || defaultSiteSettings.stat_lessons,
         stat_instructors: siteSettingsForm.stat_instructors.trim() || defaultSiteSettings.stat_instructors,
         stat_materials: siteSettingsForm.stat_materials.trim() || defaultSiteSettings.stat_materials,
-        hero_image_url: siteSettingsForm.hero_image_url.trim() || null,
-  logo_url: siteSettingsForm.logo_url.trim() || null,
-  og_image_url: siteSettingsForm.og_image_url.trim() || null,
-  favicon_url: siteSettingsForm.favicon_url.trim() || null,
-  site_name: siteSettingsForm.site_name.trim() || "Premium Course",
+        logo_url: siteSettingsForm.logo_url.trim() || null,
+        og_image_url: siteSettingsForm.og_image_url.trim() || null,
+        favicon_url: siteSettingsForm.favicon_url.trim() || null,
+        site_name: siteSettingsForm.site_name.trim() || "Premium Course",
       };
-
       const { error } = await supabase.from("site_settings").upsert(payload as any, { onConflict: "is_default" });
       if (error) throw error;
     },
