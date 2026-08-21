@@ -25,6 +25,8 @@ import {
 } from "lucide-react";
 // Main owner — users লিস্টে দেখাবে না, demote ও করা যাবে না
 const HIDDEN_ADMIN_EMAILS = ["ahmedzarir07@gmail.com"];
+// Cannot be demoted, but — unlike HIDDEN_ADMIN_EMAILS — still shows up in the Users list.
+const PROTECTED_ADMIN_EMAILS = ["ahmedzarir07@gmail.com", "pablogavibarcelona6@gmail.com"];
 const Admin = () => {
   const { session, isAdmin, loading: authLoading } = useAuth();
   const { toast } = useToast();
@@ -1509,7 +1511,7 @@ const updateOrderStatus = useMutation({
 
                   const renderRow = (profile: any, userIsAdmin: boolean) => {
                     const isSelf = profile.id === session?.user?.id;
-                    const isProtectedOwner = HIDDEN_ADMIN_EMAILS.includes(
+                    const isProtectedOwner = PROTECTED_ADMIN_EMAILS.includes(
                       (profile.email || "").toLowerCase()
                     );
 
