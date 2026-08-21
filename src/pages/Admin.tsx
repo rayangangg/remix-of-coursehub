@@ -60,6 +60,11 @@ const Admin = () => {
     stat_lessons: defaultSiteSettings.stat_lessons,
     stat_instructors: defaultSiteSettings.stat_instructors,
     stat_materials: defaultSiteSettings.stat_materials,
+    hero_image_url: "",
+  logo_url: "",
+  og_image_url: "",
+  favicon_url: "",
+  site_name: "Premium Course",
   });
 
   const [courseForm, setCourseForm] = useState({
@@ -203,6 +208,11 @@ const { data: enrollments, isLoading: enrollmentsLoading } = useQuery({
       stat_lessons: siteSettings.stat_lessons,
       stat_instructors: siteSettings.stat_instructors,
       stat_materials: siteSettings.stat_materials,
+      hero_image_url: siteSettings.hero_image_url || "",
+  logo_url: siteSettings.logo_url || "",
+  og_image_url: siteSettings.og_image_url || "",
+  favicon_url: siteSettings.favicon_url || "",
+  site_name: siteSettings.site_name || "Premium Course",
     });
   }, [siteSettings]);
 
@@ -462,6 +472,11 @@ const updateOrderStatus = useMutation({
         stat_lessons: siteSettingsForm.stat_lessons.trim() || defaultSiteSettings.stat_lessons,
         stat_instructors: siteSettingsForm.stat_instructors.trim() || defaultSiteSettings.stat_instructors,
         stat_materials: siteSettingsForm.stat_materials.trim() || defaultSiteSettings.stat_materials,
+        hero_image_url: siteSettingsForm.hero_image_url.trim() || null,
+  logo_url: siteSettingsForm.logo_url.trim() || null,
+  og_image_url: siteSettingsForm.og_image_url.trim() || null,
+  favicon_url: siteSettingsForm.favicon_url.trim() || null,
+  site_name: siteSettingsForm.site_name.trim() || "Premium Course",
       };
 
       const { error } = await supabase.from("site_settings").upsert(payload as any, { onConflict: "is_default" });
@@ -673,7 +688,73 @@ const updateOrderStatus = useMutation({
                       </Button>
                     </div>
                   </div>
+{/* Branding: Logo, OG, Favicon */}
+<div className="glass-card p-5">
+  <h3 className="font-display font-semibold text-foreground mb-2">
+    Branding (Logo, OG Image, Favicon)
+  </h3>
+  <p className="text-sm text-muted-foreground mb-4">
+    Admin Files থেকে ইমেজ আপলোড করে Share Link কপি করে এখানে পেস্ট করো।
+  </p>
 
+  <div className="space-y-4">
+    <div className="space-y-2">
+      <Label className="text-foreground/80">Site Name</Label>
+      <Input
+        value={siteSettingsForm.site_name}
+        onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, site_name: e.target.value })}
+        className="bg-secondary/50 border-border/50"
+        placeholder="Premium Course"
+      />
+    </div>
+
+    <div className="space-y-2">
+      <Label className="text-foreground/80">Logo URL</Label>
+      <Input
+        value={siteSettingsForm.logo_url}
+        onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, logo_url: e.target.value })}
+        className="bg-secondary/50 border-border/50"
+        placeholder="https://.../logo.png"
+      />
+      {siteSettingsForm.logo_url && (
+        <img
+          src={siteSettingsForm.logo_url}
+          alt="Logo preview"
+          className="h-10 w-auto object-contain mt-2"
+          referrerPolicy="no-referrer"
+        />
+      )}
+    </div>
+
+    <div className="space-y-2">
+      <Label className="text-foreground/80">OG Image URL (Facebook/Twitter share)</Label>
+      <Input
+        value={siteSettingsForm.og_image_url}
+        onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, og_image_url: e.target.value })}
+        className="bg-secondary/50 border-border/50"
+        placeholder="https://.../og-image.png"
+      />
+      {siteSettingsForm.og_image_url && (
+        <img
+          src={siteSettingsForm.og_image_url}
+          alt="OG preview"
+          className="w-full max-w-xs h-32 object-cover rounded mt-2"
+          referrerPolicy="no-referrer"
+        />
+      )}
+    </div>
+
+    <div className="space-y-2">
+      <Label className="text-foreground/80">Favicon URL</Label>
+      <Input
+        value={siteSettingsForm.favicon_url}
+        onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, favicon_url: e.target.value })}
+        className="bg-secondary/50 border-border/50"
+        placeholder="https://.../favicon.ico"
+      />
+    </div>
+  </div>
+</div>
                   {/* Add Lesson Form */}
                   {addingLessonToSection === section.id && (
                     <div className="p-4 bg-primary/5 border-t border-border/20 space-y-3 animate-fade-in">
