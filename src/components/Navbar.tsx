@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,15 +12,19 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { BookOpen, LogOut, Shield, User, Menu, X, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { useSiteSettings } from "@/hooks/useSiteSettings";
-const Navbar = () => {
-  const { session, isAdmin, signOut, loading: authLoading } = useAuth();
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [mobileOpen, setMobileOpen] = useState(false);
+
 const Navbar = () => {
   const { session, isAdmin, signOut, loading: authLoading } = useAuth();
   const { data: siteSettings } = useSiteSettings();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const siteName = siteSettings?.site_name || "Premium Course";
+  const nameParts = siteName.split(" ");
+  const firstWord = nameParts[0] || "Premium";
+  const restWords = nameParts.slice(1).join(" ") || "Course";
+
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/courses", label: "Courses" },
@@ -31,14 +36,15 @@ const Navbar = () => {
     setMobileOpen(false);
     navigate("/");
   };
-return (
+
+  return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border/50">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
           {siteSettings?.logo_url ? (
             <img
               src={siteSettings.logo_url}
-              alt={siteSettings.site_name || "Logo"}
+              alt={siteName}
               className="h-8 w-auto object-contain"
               referrerPolicy="no-referrer"
             />
@@ -46,28 +52,8 @@ return (
             <BookOpen className="w-6 h-6 text-primary" />
           )}
           <span className="font-display font-bold text-xl text-primary">
-            {siteSettings?.site_name ? (
-              <>
-                {siteSettings.site_name.split(" ")[0]}
-                <span className="text-foreground">
-                  {" "}
-                  {siteSettings.site_name.split(" ").slice(1).join(" ") || "Course"}
-                </span>
-              </>
-            ) : (
-              <>
-                Premium<span className="text-foreground"> Course</span>
-              </>
-            )}
-          </span>
-        </Link>
-  return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border/50">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <BookOpen className="w-6 h-6 text-primary" />
-          <span className="font-display font-bold text-xl text-primary">
-            Premium<span className="text-foreground"> Course</span>
+            {firstWord}
+            <span className="text-foreground"> {restWords}</span>
           </span>
         </Link>
 
@@ -77,7 +63,9 @@ return (
               key={link.href}
               to={link.href}
               className={`text-sm font-medium transition-colors ${
-                location.pathname === link.href ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                location.pathname === link.href
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {link.label}
@@ -114,22 +102,29 @@ return (
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onSelect={(event) => {
-                  event.preventDefault();
-                  handleSignOut();
-                }}>
+                <DropdownMenuItem
+                  onSelect={(event) => {
+                    event.preventDefault();
+                    handleSignOut();
+                  }}
+                >
                   <LogOut className="w-4 h-4 mr-2" /> Logout
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
             <Link to="/auth">
-              <Button size="sm" className="btn-primary">Login</Button>
+              <Button size="sm" className="btn-primary">
+                Login
+              </Button>
             </Link>
           )}
         </div>
 
-        <button className="md:hidden text-foreground" onClick={() => setMobileOpen(!mobileOpen)}>
+        <button
+          className="md:hidden text-foreground"
+          onClick={() => setMobileOpen(!mobileOpen)}
+        >
           {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
       </div>
@@ -142,7 +137,9 @@ return (
               to={link.href}
               onClick={() => setMobileOpen(false)}
               className={`block py-2 text-sm font-medium ${
-                location.pathname === link.href ? "text-primary" : "text-muted-foreground"
+                location.pathname === link.href
+                  ? "text-primary"
+                  : "text-muted-foreground"
               }`}
             >
               {link.label}
@@ -151,17 +148,29 @@ return (
 
           {session && !authLoading && (
             <>
-              <Link to="/profile" onClick={() => setMobileOpen(false)} className="block py-2 text-sm font-medium text-muted-foreground">
+              <Link
+                to="/profile"
+                onClick={() => setMobileOpen(false)}
+                className="block py-2 text-sm font-medium text-muted-foreground"
+              >
                 My Profile
               </Link>
-              <Link to="/dashboard" onClick={() => setMobileOpen(false)} className="block py-2 text-sm font-medium text-muted-foreground">
+              <Link
+                to="/dashboard"
+                onClick={() => setMobileOpen(false)}
+                className="block py-2 text-sm font-medium text-muted-foreground"
+              >
                 My Courses
               </Link>
             </>
           )}
 
           {isAdmin && (
-            <Link to="/admin" onClick={() => setMobileOpen(false)} className="block py-2 text-sm font-medium text-primary">
+            <Link
+              to="/admin"
+              onClick={() => setMobileOpen(false)}
+              className="block py-2 text-sm font-medium text-primary"
+            >
               Admin Panel
             </Link>
           )}
@@ -173,7 +182,11 @@ return (
               Sign Out
             </button>
           ) : (
-            <Link to="/auth" onClick={() => setMobileOpen(false)} className="block py-2 text-sm text-primary font-medium">
+            <Link
+              to="/auth"
+              onClick={() => setMobileOpen(false)}
+              className="block py-2 text-sm text-primary font-medium"
+            >
               Login
             </Link>
           )}
