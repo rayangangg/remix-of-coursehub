@@ -11,13 +11,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { BookOpen, LogOut, Shield, User, Menu, X, Loader2 } from "lucide-react";
 import { useState } from "react";
-
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 const Navbar = () => {
   const { session, isAdmin, signOut, loading: authLoading } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
-
+const Navbar = () => {
+  const { session, isAdmin, signOut, loading: authLoading } = useAuth();
+  const { data: siteSettings } = useSiteSettings();
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/courses", label: "Courses" },
@@ -29,7 +31,36 @@ const Navbar = () => {
     setMobileOpen(false);
     navigate("/");
   };
-
+return (
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border/50">
+      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-2">
+          {siteSettings?.logo_url ? (
+            <img
+              src={siteSettings.logo_url}
+              alt={siteSettings.site_name || "Logo"}
+              className="h-8 w-auto object-contain"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <BookOpen className="w-6 h-6 text-primary" />
+          )}
+          <span className="font-display font-bold text-xl text-primary">
+            {siteSettings?.site_name ? (
+              <>
+                {siteSettings.site_name.split(" ")[0]}
+                <span className="text-foreground">
+                  {" "}
+                  {siteSettings.site_name.split(" ").slice(1).join(" ") || "Course"}
+                </span>
+              </>
+            ) : (
+              <>
+                Premium<span className="text-foreground"> Course</span>
+              </>
+            )}
+          </span>
+        </Link>
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border/50">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
