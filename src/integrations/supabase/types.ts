@@ -62,6 +62,7 @@ export type Database = {
           image_url: string | null
           instructor_name: string | null
           instructor_title: string | null
+          is_free: boolean
           is_published: boolean
           price_bdt: number
           price_usd: number
@@ -85,6 +86,7 @@ export type Database = {
           image_url?: string | null
           instructor_name?: string | null
           instructor_title?: string | null
+          is_free?: boolean
           is_published?: boolean
           price_bdt?: number
           price_usd?: number
@@ -108,6 +110,7 @@ export type Database = {
           image_url?: string | null
           instructor_name?: string | null
           instructor_title?: string | null
+          is_free?: boolean
           is_published?: boolean
           price_bdt?: number
           price_usd?: number
@@ -428,6 +431,10 @@ export type Database = {
     }
     Functions: {
       course_materials_storage_usage: { Args: never; Returns: number }
+      enroll_in_free_course: {
+        Args: { _course_id: string }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

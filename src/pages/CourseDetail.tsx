@@ -316,34 +316,52 @@ const navigate = useNavigate();
             <div className="lg:col-span-1">
               <div className="sticky top-24 space-y-4">
                 {!showPayment ? (
-  <div className="glass-card p-6 space-y-4">
-    <div className="text-center">
-      <p className="text-3xl font-display font-bold text-primary">৳{course.price_bdt}</p>
-    </div>
-    <Button
-      onClick={() => {
-        if (!session?.user) {
-          navigate("/auth");
-          return;
-        }
-        setShowPayment(true);
-      }}
-      className="w-full btn-primary py-6 text-base glow-sm"
-      size="lg"
-    >
-      {session?.user ? "Buy Now" : "Login to Buy"}
-    </Button>
-    <div className="text-center text-xs text-muted-foreground space-y-1">
-      <p>✓ Lifetime access</p>
-      <p>✓ All course materials</p>
-      <p>✓ Certificate of completion</p>
-    </div>
-  </div>
-) : (
-  <PaymentForm course={course} />
-      )}
+                  <div className="glass-card p-6 space-y-4">
+                    <div className="text-center">
+                      <p className="text-3xl font-display font-bold text-primary">
+                        {course.is_free ? "Free" : `৳${course.price_bdt}`}
+                      </p>
+                      {course.is_free && (
+                        <p className="text-xs text-muted-foreground mt-1">No payment required</p>
+                      )}
+                    </div>
+                    <Button
+                      onClick={() => {
+                        if (!session?.user) {
+                          navigate("/auth");
+                          return;
+                        }
+                        if (course.is_free) {
+                          enrollFree.mutate();
+                          return;
+                        }
+                        setShowPayment(true);
+                      }}
+                      disabled={enrollFree.isPending}
+                      className="w-full btn-primary py-6 text-base glow-sm"
+                      size="lg"
+                    >
+                      {enrollFree.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                      {!session?.user
+                        ? course.is_free
+                          ? "Login to Enroll"
+                          : "Login to Buy"
+                        : course.is_free
+                          ? "Enroll for Free"
+                          : "Buy Now"}
+                    </Button>
+                    <div className="text-center text-xs text-muted-foreground space-y-1">
+                      <p>✓ Lifetime access</p>
+                      <p>✓ All course materials</p>
+                      <p>✓ Certificate of completion</p>
+                    </div>
+                  </div>
+                ) : (
+                  <PaymentForm course={course} />
+                )}
               </div>
             </div>
+
           </div>
         </div>
       </div>

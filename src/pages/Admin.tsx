@@ -68,7 +68,7 @@ const Admin = () => {
 
   const [courseForm, setCourseForm] = useState({
     title: "", description: "", image_url: "", video_url: "",
-    price_bdt: "", is_published: false,
+    price_bdt: "", is_free: false, is_published: false,
     instructor_name: "", instructor_title: "",
     total_classes: "", total_exams: "", total_materials: "",
     category: "Main", promo_code: "", discount_percent: "",
@@ -220,8 +220,9 @@ const { data: enrollments, isLoading: enrollmentsLoading } = useQuery({
       const title = courseForm.title.trim();
       if (!title) throw new Error("Course title is required");
 
-      const priceBdt = Number(courseForm.price_bdt);
-      if (!Number.isFinite(priceBdt) || priceBdt < 0) {
+      const isFree = courseForm.is_free;
+      const priceBdt = isFree ? 0 : Number(courseForm.price_bdt);
+      if (!isFree && (!Number.isFinite(priceBdt) || priceBdt < 0)) {
         throw new Error("Please enter a valid BDT price");
       }
 
@@ -232,6 +233,7 @@ const { data: enrollments, isLoading: enrollmentsLoading } = useQuery({
         video_url: courseForm.video_url.trim() || null,
         price_bdt: priceBdt,
         price_usd: 0,
+        is_free: isFree,
         is_published: courseForm.is_published,
         instructor_name: courseForm.instructor_name.trim() || null,
         instructor_title: courseForm.instructor_title.trim() || null,
@@ -527,7 +529,7 @@ const updateOrderStatus = useMutation({
   const resetForm = () => {
     setCourseForm({
       title: "", description: "", image_url: "", video_url: "",
-      price_bdt: "", is_published: false,
+      price_bdt: "", is_free: false, is_published: false,
       instructor_name: "", instructor_title: "",
       total_classes: "", total_exams: "", total_materials: "",
       category: "Main", promo_code: "", discount_percent: "",
@@ -544,6 +546,7 @@ const updateOrderStatus = useMutation({
       image_url: course.image_url || "",
       video_url: course.video_url || "",
       price_bdt: String(course.price_bdt),
+      is_free: !!course.is_free,
       is_published: course.is_published,
       instructor_name: course.instructor_name || "",
       instructor_title: course.instructor_title || "",
@@ -1006,8 +1009,11 @@ const updateOrderStatus = useMutation({
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div className="space-y-2">
                         <Label className="text-foreground/80">Price BDT ৳</Label>
-                        <Input type="number" value={courseForm.price_bdt} onChange={(e) => setCourseForm({ ...courseForm, price_bdt: e.target.value })}
-                          className="bg-secondary/50 border-border/50" required />
+                        <Input type="number" min="0" value={courseForm.is_free ? "0" : courseForm.price_bdt}
+                          onChange={(e) => setCourseForm({ ...courseForm, price_bdt: e.target.value })}
+                          disabled={courseForm.is_free}
+                          placeholder={courseForm.is_free ? "Free" : "0"}
+                          className="bg-secondary/50 border-border/50 disabled:opacity-60" required={!courseForm.is_free} />
                       </div>
                       <div className="space-y-2">
                         <Label className="text-foreground/80">Total Classes</Label>
@@ -1041,6 +1047,24 @@ const updateOrderStatus = useMutation({
                         <Label className="text-foreground/80">Group Link</Label>
                         <Input value={courseForm.group_link} onChange={(e) => setCourseForm({ ...courseForm, group_link: e.target.value })}
                           className="bg-secondary/50 border-border/50" placeholder="https://t.me/..." />
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl border border-border/60 bg-secondary/40 p-4 space-y-3">
+                      <Label className="text-foreground/80">Pricing</Label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <button type="button"
+                          onClick={() => setCourseForm({ ...courseForm, is_free: false })}
+                          className={`rounded-lg border p-3 text-left text-sm transition-all ${!courseForm.is_free ? "border-primary bg-primary/10 text-foreground" : "border-border/60 text-muted-foreground hover:text-foreground"}`}>
+                          <span className="font-semibold block">Paid course</span>
+                          <span className="text-xs">Students pay via bKash / Nagad</span>
+                        </button>
+                        <button type="button"
+                          onClick={() => setCourseForm({ ...courseForm, is_free: true, price_bdt: "0" })}
+                          className={`rounded-lg border p-3 text-left text-sm transition-all ${courseForm.is_free ? "border-primary bg-primary/10 text-foreground" : "border-border/60 text-muted-foreground hover:text-foreground"}`}>
+                          <span className="font-semibold block">Free course</span>
+                          <span className="text-xs">Instant access, no payment needed</span>
+                        </button>
                       </div>
                     </div>
 
@@ -1081,7 +1105,7 @@ const updateOrderStatus = useMutation({
                             <span className="text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded">{course.category}</span>
                           </div>
                           <p className="text-sm text-muted-foreground">
-                            ৳{course.price_bdt}
+                            {course.is_free ? "Free" : `৳${course.price_bdt}`}
                             {course.discount_percent > 0 && (
                               <span className="text-primary ml-2">-{course.discount_percent}%</span>
                             )}
