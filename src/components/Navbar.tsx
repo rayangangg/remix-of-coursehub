@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { BookOpen, LogOut, Shield, User, Menu, X, Loader2 } from "lucide-react";
 import { useState } from "react";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const Navbar = () => {
   const { session, isAdmin, signOut, loading: authLoading } = useAuth();
@@ -74,6 +75,7 @@ const Navbar = () => {
         </div>
 
         <div className="hidden md:flex items-center gap-3">
+          <ThemeToggle />
           {authLoading ? (
             <Loader2 className="w-4 h-4 text-primary animate-spin" />
           ) : session ? (
@@ -121,12 +123,16 @@ const Navbar = () => {
           )}
         </div>
 
-        <button
-          className="md:hidden text-foreground"
-          onClick={() => setMobileOpen(!mobileOpen)}
-        >
-          {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
+        <div className="flex items-center gap-2 md:hidden">
+          <ThemeToggle />
+          <button
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border/60 text-foreground"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Toggle menu"
+          >
+            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
       </div>
 
       {mobileOpen && (
