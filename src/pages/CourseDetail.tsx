@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import Navbar from "@/components/Navbar";
@@ -15,9 +15,11 @@ import {
   ChevronUp,
   Video,
   Lock,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { resolveVideo, getEmbeddableVideoUrl } from "@/lib/video";
+import { useToast } from "@/hooks/use-toast";
 
 type LessonItem = {
   id: string;
@@ -72,6 +74,33 @@ const CourseDetail = () => {
     enabled: !!id && !!session?.user?.id,
   });
 
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  const enrollFree = useMutation({
+    mutationFn: async () => {
+      if (!session?.user?.id || !id) throw new Error("Not authenticated");
+      const { error } = await supabase.from("enrollments").insert({
+        user_id: session.user.id,
+        course_id: id,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["enrollment", id, session?.user?.id] });
+      toast({ title: "Enrolled successfully!", description: "You can now start learning." });
+      navigate(`/learn/${id}`);
+    },
+    onError: (err: any) => {
+      toast({
+        title: "Enrollment failed",
+        description: err?.message || "Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
 
   const toggleSection = (sectionId: string) => {
@@ -82,7 +111,7 @@ const CourseDetail = () => {
       return next;
     });
   };
-const navigate = useNavigate();
+
   const totalLessons = sections?.reduce((acc, s) => acc + ((s.lessons as LessonItem[])?.length || 0), 0) || 0;
 
   const freePreviewLessons = useMemo(() => {
