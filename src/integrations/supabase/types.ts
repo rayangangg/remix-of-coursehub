@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.1"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
@@ -332,6 +332,7 @@ export type Database = {
       site_settings: {
         Row: {
           created_at: string
+          favicon_url: string | null
           hero_badge: string
           hero_description: string
           hero_highlight: string
@@ -339,11 +340,14 @@ export type Database = {
           hero_title: string
           id: string
           is_default: boolean
+          logo_url: string | null
+          og_image_url: string | null
           payment_bkash: string
           payment_nagad: string
           primary_hue: number
           primary_lightness: number
           primary_saturation: number
+          site_name: string | null
           stat_instructors: string
           stat_lessons: string
           stat_materials: string
@@ -352,6 +356,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          favicon_url?: string | null
           hero_badge?: string
           hero_description?: string
           hero_highlight?: string
@@ -359,11 +364,14 @@ export type Database = {
           hero_title?: string
           id?: string
           is_default?: boolean
+          logo_url?: string | null
+          og_image_url?: string | null
           payment_bkash?: string
           payment_nagad?: string
           primary_hue?: number
           primary_lightness?: number
           primary_saturation?: number
+          site_name?: string | null
           stat_instructors?: string
           stat_lessons?: string
           stat_materials?: string
@@ -372,6 +380,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          favicon_url?: string | null
           hero_badge?: string
           hero_description?: string
           hero_highlight?: string
@@ -379,11 +388,14 @@ export type Database = {
           hero_title?: string
           id?: string
           is_default?: boolean
+          logo_url?: string | null
+          og_image_url?: string | null
           payment_bkash?: string
           payment_nagad?: string
           primary_hue?: number
           primary_lightness?: number
           primary_saturation?: number
+          site_name?: string | null
           stat_instructors?: string
           stat_lessons?: string
           stat_materials?: string
@@ -425,7 +437,9 @@ export type Database = {
       }
       is_admin: { Args: never; Returns: boolean }
       is_main_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_protected_admin: { Args: { _user_id: string }; Returns: boolean }
       main_admin_email: { Args: never; Returns: string }
+      protected_admin_emails: { Args: never; Returns: string[] }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
