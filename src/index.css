@@ -121,53 +121,63 @@
     @apply border-border;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Inter', sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Space Grotesk', sans-serif;
+    letter-spacing: -0.02em;
   }
 }
 
 @layer utilities {
   .glass {
-    @apply bg-card/60 backdrop-blur-xl border border-border/50;
+    @apply bg-card/70 backdrop-blur-xl border border-border/60;
   }
 
   .glow-primary {
-    box-shadow: 0 0 30px -5px hsl(var(--primary) / 0.4),
-                0 0 60px -10px hsl(var(--primary) / 0.2);
+    box-shadow: 0 0 30px -5px hsl(var(--primary) / 0.35),
+                0 0 60px -10px hsl(var(--primary) / 0.18);
   }
 
   .glow-sm {
-    box-shadow: 0 0 15px -3px hsl(var(--primary) / 0.3);
+    box-shadow: 0 0 15px -3px hsl(var(--primary) / 0.25);
   }
 
   .text-gradient {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, hsl(var(--primary)), hsl(150 65% 55%), hsl(160 70% 50%));
+    background-image: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--green-accent)));
   }
 
   .bg-gradient-hero {
-    background: linear-gradient(135deg, hsl(0 0% 7%) 0%, hsl(0 0% 10%) 50%, hsl(0 0% 7%) 100%);
+    background: linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--secondary)) 100%);
   }
 
   .bg-gradient-green {
-    background: linear-gradient(135deg, hsl(140 50% 15%) 0%, hsl(120 40% 20%) 50%, hsl(140 50% 15%) 100%);
+    background:
+      radial-gradient(60% 80% at 50% 0%, hsl(var(--primary) / 0.14) 0%, transparent 70%),
+      linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--secondary)) 100%);
   }
 
   .glass-card {
-    @apply bg-card/60 backdrop-blur-xl border border-border/40 rounded-xl;
+    @apply bg-card border border-border rounded-xl;
+    box-shadow: var(--shadow-card);
   }
 
   .stat-card {
-    @apply bg-card border border-border/30 rounded-xl p-6 flex items-center gap-4;
+    @apply bg-card border border-border rounded-xl p-5 md:p-6 flex items-center gap-4;
+    box-shadow: var(--shadow-soft);
   }
 
   .section-title {
-    @apply text-2xl md:text-3xl font-display font-bold text-foreground;
+    @apply text-2xl md:text-3xl font-display font-bold text-foreground tracking-tight;
   }
 
   .btn-primary {
@@ -175,6 +185,7 @@
   }
 
   .course-card-hover {
-    @apply transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10;
+    @apply transition-all duration-300 hover:border-primary/50 hover:-translate-y-0.5;
   }
 }
+
