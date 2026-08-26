@@ -3,11 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import CourseCard from "@/components/CourseCard";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { BookOpen } from "lucide-react";
+import { BookOpen, Search } from "lucide-react";
 import { useState } from "react";
 
 const Courses = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const { data: courses, isLoading } = useQuery({
     queryKey: ["courses"],
@@ -23,7 +24,13 @@ const Courses = () => {
   });
 
   const categories = ["All", ...new Set(courses?.map((c) => c.category || "Main") || [])];
-  const filtered = selectedCategory === "All" ? courses : courses?.filter((c) => (c.category || "Main") === selectedCategory);
+  const byCategory = selectedCategory === "All" ? courses : courses?.filter((c) => (c.category || "Main") === selectedCategory);
+  const filtered = searchQuery.trim()
+    ? byCategory?.filter((c) =>
+        c.title?.toLowerCase().includes(searchQuery.trim().toLowerCase()) ||
+        c.description?.toLowerCase().includes(searchQuery.trim().toLowerCase())
+      )
+    : byCategory;
 
   return (
     <div className="min-h-screen bg-background">
@@ -33,6 +40,18 @@ const Courses = () => {
           <div className="text-center mb-8">
             <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-3">All Courses</h1>
             <p className="text-muted-foreground">Browse our complete catalog</p>
+          </div>
+
+          {/* Search Bar */}
+          <div className="max-w-md mx-auto mb-6 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search courses..."
+              className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-secondary/50 border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
+            />
           </div>
 
           {/* Category Filter */}
@@ -70,7 +89,9 @@ const Courses = () => {
             <div className="text-center py-20 glass-card">
               <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-xl font-display font-semibold text-foreground mb-2">No courses found</h3>
-              <p className="text-muted-foreground">Try a different category</p>
+              <p className="text-muted-foreground">
+                {searchQuery.trim() ? "Try a different search term" : "Try a different category"}
+              </p>
             </div>
           )}
         </div>
