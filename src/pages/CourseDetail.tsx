@@ -81,10 +81,7 @@ const CourseDetail = () => {
   const enrollFree = useMutation({
     mutationFn: async () => {
       if (!session?.user?.id || !id) throw new Error("Not authenticated");
-      const { error } = await supabase.from("enrollments").insert({
-        user_id: session.user.id,
-        course_id: id,
-      });
+      const { error } = await supabase.rpc("enroll_in_free_course", { _course_id: id });
       if (error) throw error;
     },
     onSuccess: () => {
